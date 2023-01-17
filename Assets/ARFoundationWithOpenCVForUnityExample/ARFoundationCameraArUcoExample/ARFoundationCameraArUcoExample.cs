@@ -1,7 +1,7 @@
 ﻿#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
 using ARFoundationWithOpenCVForUnity.UnityUtils.Helper;
-using OpenCVForUnity.ArucoModule;
+using OpenCVForUnity.ObjdetectModule;
 using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
@@ -109,49 +109,20 @@ namespace ARFoundationWithOpenCVForUnityExample
         Matrix4x4 ARM;
 
         /// <summary>
-        /// The identifiers.
-        /// </summary>
-        Mat ids;
-
-        /// <summary>
-        /// The corners.
-        /// </summary>
-        List<Mat> corners;
-
-        /// <summary>
-        /// The rejected corners.
-        /// </summary>
-        List<Mat> rejectedCorners;
-
-        /// <summary>
-        /// The rvecs.
-        /// </summary>
-        Mat rvecs;
-
-        /// <summary>
-        /// The tvecs.
-        /// </summary>
-        Mat tvecs;
-
-        /// <summary>
-        /// The rot mat.
-        /// </summary>
-        Mat rotMat;
-
-        /// <summary>
-        /// The detector parameters.
-        /// </summary>
-        DetectorParameters detectorParams;
-
-        /// <summary>
-        /// The dictionary.
-        /// </summary>
-        Dictionary dictionary;
-
-        /// <summary>
         /// The FPS monitor.
         /// </summary>
         FpsMonitor fpsMonitor;
+
+        // for CanonicalMarker.
+        Mat ids;
+        List<Mat> corners;
+        List<Mat> rejectedCorners;
+        Dictionary dictionary;
+        ArucoDetector arucoDetector;
+
+        Mat rvecs;
+        Mat tvecs;
+
 
         Matrix4x4 fitARFoundationBackgroundMatrix;
         Matrix4x4 fitHelpersFlipMatrix;
@@ -310,16 +281,19 @@ namespace ARFoundationWithOpenCVForUnityExample
 
 
             rgbMat = new Mat(webCamTextureMat.rows(), webCamTextureMat.cols(), CvType.CV_8UC3);
+
+
             ids = new Mat();
             corners = new List<Mat>();
             rejectedCorners = new List<Mat>();
-            rvecs = new Mat();
-            tvecs = new Mat();
-            rotMat = new Mat(3, 3, CvType.CV_64FC1);
+            rvecs = new Mat(1, 10, CvType.CV_64FC3);
+            tvecs = new Mat(1, 10, CvType.CV_64FC3);
+            dictionary = Objdetect.getPredefinedDictionary((int)dictionaryId);
 
-
-            detectorParams = DetectorParameters.create();
-            dictionary = Aruco.getPredefinedDictionary((int)dictionaryId);
+            DetectorParameters detectorParams = new DetectorParameters();
+            detectorParams.set_useAruco3Detection(true);
+            RefineParameters refineParameters = new RefineParameters(10f, 3f, true);
+            arucoDetector = new ArucoDetector(dictionary, detectorParams, refineParameters);
 
 
             // Create the transform matrix to fit the ARM to the background display by ARFoundationBackground component.
@@ -361,8 +335,6 @@ namespace ARFoundationWithOpenCVForUnityExample
                 rvecs.Dispose();
             if (tvecs != null)
                 tvecs.Dispose();
-            if (rotMat != null)
-                rotMat.Dispose();
         }
 
         /// <summary>
@@ -388,13 +360,14 @@ namespace ARFoundationWithOpenCVForUnityExample
             Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
 
             // detect markers.
-            Aruco.detectMarkers(rgbMat, dictionary, corners, ids, detectorParams, rejectedCorners, camMatrix, distCoeffs);
+            Calib3d.undistort(rgbMat, rgbMat, camMatrix, distCoeffs);
+            arucoDetector.detectMarkers(rgbMat, corners, ids, rejectedCorners);
 
             // if at least one marker detected
             if (ids.total() > 0)
             {
                 // draw markers.
-                Aruco.drawDetectedMarkers(rgbMat, corners, ids, new Scalar(0, 255, 0));
+                Objdetect.drawDetectedMarkers(rgbMat, corners, ids, new Scalar(0, 255, 0));
 
                 // estimate pose.
                 if (applyEstimationPose)
@@ -407,7 +380,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
             Imgproc.cvtColor(rgbMat, rgbaMat, Imgproc.COLOR_RGB2RGBA);
 
-            Utils.fastMatToTexture2D(rgbaMat, texture);
+            Utils.matToTexture2D(rgbaMat, texture);
         }
 
 #else // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
@@ -423,13 +396,14 @@ namespace ARFoundationWithOpenCVForUnityExample
                 Imgproc.cvtColor(rgbaMat, rgbMat, Imgproc.COLOR_RGBA2RGB);
 
                 // detect markers.
-                Aruco.detectMarkers(rgbMat, dictionary, corners, ids, detectorParams, rejectedCorners, camMatrix, distCoeffs);
+                Calib3d.undistort(rgbMat, rgbMat, camMatrix, distCoeffs);
+                arucoDetector.detectMarkers(rgbMat, corners, ids, rejectedCorners);
 
                 // if at least one marker detected
                 if (ids.total() > 0)
                 {
                     // draw markers.
-                    Aruco.drawDetectedMarkers(rgbMat, corners, ids, new Scalar(0, 255, 0));
+                    Objdetect.drawDetectedMarkers(rgbMat, corners, ids, new Scalar(0, 255, 0));
 
                     // estimate pose.
                     if (applyEstimationPose)
@@ -442,7 +416,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
                 Imgproc.cvtColor(rgbMat, rgbaMat, Imgproc.COLOR_RGB2RGBA);
 
-                Utils.fastMatToTexture2D(rgbaMat, texture);
+                Utils.matToTexture2D(rgbaMat, texture);
             }
         }
 
@@ -450,20 +424,31 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         private void EstimatePoseCanonicalMarker(Mat rgbMat)
         {
-            Aruco.estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs, tvecs);
-
-            for (int i = 0; i < ids.total(); i++)
+            using (MatOfPoint3f objPoints = new MatOfPoint3f(
+                new Point3(-markerLength / 2f, markerLength / 2f, 0),
+                new Point3(markerLength / 2f, markerLength / 2f, 0),
+                new Point3(markerLength / 2f, -markerLength / 2f, 0),
+                new Point3(-markerLength / 2f, -markerLength / 2f, 0)
+            ))
             {
-                using (Mat rvec = new Mat(rvecs, new OpenCVForUnity.CoreModule.Rect(0, i, 1, 1)))
-                using (Mat tvec = new Mat(tvecs, new OpenCVForUnity.CoreModule.Rect(0, i, 1, 1)))
+                for (int i = 0; i < ids.total(); i++)
                 {
-                    // In this example we are processing with RGB color image, so Axis-color correspondences are X: blue, Y: green, Z: red. (Usually X: red, Y: green, Z: blue)
-                    Calib3d.drawFrameAxes(rgbMat, camMatrix, distCoeffs, rvec, tvec, markerLength * 0.5f);
-
-                    // This example can display the ARObject on only first detected marker.
-                    if (i == 0)
+                    using (Mat rvec = new Mat(1, 1, CvType.CV_64FC3))
+                    using (Mat tvec = new Mat(1, 1, CvType.CV_64FC3))
+                    using (Mat corner_4x1 = corners[i].reshape(2, 4)) // 1*4*CV_32FC2 => 4*1*CV_32FC2
+                    using (MatOfPoint2f imagePoints = new MatOfPoint2f(corner_4x1))
                     {
-                        UpdateARObjectTransform(rvec, tvec);
+                        // Calculate pose for each marker
+                        Calib3d.solvePnP(objPoints, imagePoints, camMatrix, distCoeffs, rvec, tvec);
+
+                        // In this example we are processing with RGB color image, so Axis-color correspondences are X: blue, Y: green, Z: red. (Usually X: red, Y: green, Z: blue)
+                        Calib3d.drawFrameAxes(rgbMat, camMatrix, distCoeffs, rvec, tvec, markerLength * 0.5f);
+
+                        // This example can display the ARObject on only first detected marker.
+                        if (i == 0)
+                        {
+                            UpdateARObjectTransform(rvec, tvec);
+                        }
                     }
                 }
             }
@@ -573,7 +558,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             if ((int)dictionaryId != result)
             {
                 dictionaryId = (ArUcoDictionary)result;
-                dictionary = Aruco.getPredefinedDictionary((int)dictionaryId);
+                dictionary = Objdetect.getPredefinedDictionary((int)dictionaryId);
 
                 ResetObjectTransform();
 
@@ -620,23 +605,23 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         public enum ArUcoDictionary
         {
-            DICT_4X4_50 = Aruco.DICT_4X4_50,
-            DICT_4X4_100 = Aruco.DICT_4X4_100,
-            DICT_4X4_250 = Aruco.DICT_4X4_250,
-            DICT_4X4_1000 = Aruco.DICT_4X4_1000,
-            DICT_5X5_50 = Aruco.DICT_5X5_50,
-            DICT_5X5_100 = Aruco.DICT_5X5_100,
-            DICT_5X5_250 = Aruco.DICT_5X5_250,
-            DICT_5X5_1000 = Aruco.DICT_5X5_1000,
-            DICT_6X6_50 = Aruco.DICT_6X6_50,
-            DICT_6X6_100 = Aruco.DICT_6X6_100,
-            DICT_6X6_250 = Aruco.DICT_6X6_250,
-            DICT_6X6_1000 = Aruco.DICT_6X6_1000,
-            DICT_7X7_50 = Aruco.DICT_7X7_50,
-            DICT_7X7_100 = Aruco.DICT_7X7_100,
-            DICT_7X7_250 = Aruco.DICT_7X7_250,
-            DICT_7X7_1000 = Aruco.DICT_7X7_1000,
-            DICT_ARUCO_ORIGINAL = Aruco.DICT_ARUCO_ORIGINAL,
+            DICT_4X4_50 = Objdetect.DICT_4X4_50,
+            DICT_4X4_100 = Objdetect.DICT_4X4_100,
+            DICT_4X4_250 = Objdetect.DICT_4X4_250,
+            DICT_4X4_1000 = Objdetect.DICT_4X4_1000,
+            DICT_5X5_50 = Objdetect.DICT_5X5_50,
+            DICT_5X5_100 = Objdetect.DICT_5X5_100,
+            DICT_5X5_250 = Objdetect.DICT_5X5_250,
+            DICT_5X5_1000 = Objdetect.DICT_5X5_1000,
+            DICT_6X6_50 = Objdetect.DICT_6X6_50,
+            DICT_6X6_100 = Objdetect.DICT_6X6_100,
+            DICT_6X6_250 = Objdetect.DICT_6X6_250,
+            DICT_6X6_1000 = Objdetect.DICT_6X6_1000,
+            DICT_7X7_50 = Objdetect.DICT_7X7_50,
+            DICT_7X7_100 = Objdetect.DICT_7X7_100,
+            DICT_7X7_250 = Objdetect.DICT_7X7_250,
+            DICT_7X7_1000 = Objdetect.DICT_7X7_1000,
+            DICT_ARUCO_ORIGINAL = Objdetect.DICT_ARUCO_ORIGINAL,
         }
     }
 }

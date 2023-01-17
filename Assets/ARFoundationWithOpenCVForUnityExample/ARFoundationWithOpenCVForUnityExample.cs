@@ -11,7 +11,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         public static string GetARFoundationVersion()
         {
-            return "4.1.7";
+            return "4.1.13";
         }
 
         [Header("UI")]
