@@ -1,4 +1,4 @@
-﻿#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
+#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
 using ARFoundationWithOpenCVForUnity.UnityUtils.Helper;
 using OpenCVForUnity.CoreModule;
@@ -13,10 +13,10 @@ using UnityEngine.UI;
 namespace ARFoundationWithOpenCVForUnityExample
 {
     /// <summary>
-    /// ARFoundationCameraToMatHelper Example
+    /// ARFoundationCamera2MatHelper Example
     /// </summary>
-    [RequireComponent(typeof(ARFoundationCameraToMatHelper))]
-    public class ARFoundationCameraToMatHelperExample : MonoBehaviour
+    [RequireComponent(typeof(ARFoundationCamera2MatHelper))]
+    public class ARFoundationCamera2MatHelperExample : MonoBehaviour
     {
 
         [SerializeField]
@@ -65,7 +65,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// <summary>
         /// The webcam texture to mat helper.
         /// </summary>
-        ARFoundationCameraToMatHelper webCamTextureToMatHelper;
+        ARFoundationCamera2MatHelper webCamTextureToMatHelper;
 
         /// <summary>
         /// The FPS monitor.
@@ -77,7 +77,8 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             fpsMonitor = GetComponent<FpsMonitor>();
 
-            webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCameraToMatHelper>();
+            webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCamera2MatHelper>();
+            webCamTextureToMatHelper.outputColorFormat = Source2MatHelperColorFormat.RGBA;
             int width, height;
             Dimensions(requestedResolution, out width, out height);
             webCamTextureToMatHelper.requestedWidth = width;
@@ -102,14 +103,14 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             Debug.Log("OnWebCamTextureToMatHelperInitialized");
 
-            Mat webCamTextureMat = webCamTextureToMatHelper.GetMat();
+            Mat rgbaMat = webCamTextureToMatHelper.GetMat();
 
-            texture = new Texture2D(webCamTextureMat.cols(), webCamTextureMat.rows(), TextureFormat.RGBA32, false);
-            Utils.fastMatToTexture2D(webCamTextureMat, texture);
+            texture = new Texture2D(rgbaMat.cols(), rgbaMat.rows(), TextureFormat.RGBA32, false);
+            Utils.matToTexture2D(rgbaMat, texture);
 
             gameObject.GetComponent<Renderer>().material.mainTexture = texture;
 
-            gameObject.transform.localScale = new Vector3(webCamTextureMat.cols(), webCamTextureMat.rows(), 1);
+            gameObject.transform.localScale = new Vector3(rgbaMat.cols(), rgbaMat.rows(), 1);
             Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
             if (fpsMonitor != null)
@@ -136,8 +137,8 @@ namespace ARFoundationWithOpenCVForUnityExample
             }
 
 
-            float width = webCamTextureMat.width();
-            float height = webCamTextureMat.height();
+            float width = rgbaMat.width();
+            float height = rgbaMat.height();
 
             float widthScale = (float)Screen.width / width;
             float heightScale = (float)Screen.height / height;
@@ -246,13 +247,14 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// Raises the webcam texture to mat helper error occurred event.
         /// </summary>
         /// <param name="errorCode">Error code.</param>
-        public void OnWebCamTextureToMatHelperErrorOccurred(WebCamTextureToMatHelper.ErrorCode errorCode)
+        /// <param name="message">Message.</param>
+        public void OnWebCamTextureToMatHelperErrorOccurred(Source2MatHelperErrorCode errorCode, string message)
         {
-            Debug.Log("OnWebCamTextureToMatHelperErrorOccurred " + errorCode);
+            Debug.Log("OnWebCamTextureToMatHelperErrorOccurred " + errorCode + ":" + message);
 
             if (fpsMonitor != null)
             {
-                fpsMonitor.consoleText = "ErrorCode: " + errorCode;
+                fpsMonitor.consoleText = "ErrorCode: " + errorCode + ":" + message;
             }
         }
 
@@ -266,7 +268,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
                 //Imgproc.putText (rgbaMat, "W:" + rgbaMat.width () + " H:" + rgbaMat.height () + " SO:" + Screen.orientation, new Point (5, rgbaMat.rows () - 10), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar (255, 255, 255, 255), 2, Imgproc.LINE_AA, false);
 
-                Utils.fastMatToTexture2D(rgbaMat, texture);
+                Utils.matToTexture2D(rgbaMat, texture);
 
                 if (fpsMonitor != null)
                 {

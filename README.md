@@ -6,12 +6,12 @@
 
 ## Environment
 - Android (Pixel, Galaxy S10+) / iOS (iPhoneSE2)
-- Unity >= 2020.3.38f1+
+- Unity >= 2021.3.35f1+
 - Scripting backend MONO / IL2CPP
-- [AR Foundation] 4.1.13+
-- [ARCore XR Plugin] 4.1.13+
-- [ARKit XR Plugin] 4.1.13+
-- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.5.1+
+- [AR Foundation] 4.2.10+
+- [ARCore XR Plugin] 4.2.10+
+- [ARKit XR Plugin] 4.2.10+
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.6.4+
 
 
 ## Demo

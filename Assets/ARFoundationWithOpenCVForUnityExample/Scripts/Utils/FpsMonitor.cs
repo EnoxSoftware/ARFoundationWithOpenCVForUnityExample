@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ARFoundationWithOpenCVForUnityExample
 {
-    // v1.0.1
+    // v1.0.2
     public class FpsMonitor : MonoBehaviour
     {
         int tick = 0;
@@ -26,7 +26,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         const float MARGIN_Y = 10f;
         const float INNER_X = 8f;
         const float INNER_Y = 5f;
-        const float GUI_CONSOLE_HEIGHT = 50f;
+        const float GUI_CONSOLE_HEIGHT = 100f;
 
         public Vector2 offset = new Vector2(MARGIN_X, MARGIN_Y);
         public bool boxVisible = true;
@@ -123,7 +123,8 @@ namespace ARFoundationWithOpenCVForUnityExample
 
             if (!string.IsNullOrEmpty(consoleText))
             {
-                if (toast_time != 0) {
+                if (toast_time != 0)
+                {
                     if (boxVisible)
                     {
                         GUI.Box(console_outer, "");

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         public static string GetARFoundationVersion()
         {
-            return "4.1.13";
+            return "4.2.10";
         }
 
         [Header("UI")]
@@ -92,9 +92,9 @@ namespace ARFoundationWithOpenCVForUnityExample
             SceneManager.LoadScene("ARFoundationCameraToMatExample");
         }
 
-        public void OnARFoundationCameraToMatHelperExampleButtonClick()
+        public void OnARFoundationCamera2MatHelperExampleButtonClick()
         {
-            SceneManager.LoadScene("ARFoundationCameraToMatHelperExample");
+            SceneManager.LoadScene("ARFoundationCamera2MatHelperExample");
         }
         public void OnARFoundationCameraArUcoExampleButtonClick()
         {

@@ -1,4 +1,4 @@
-﻿#pragma warning disable 0067
+#pragma warning disable 0067
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityUtils;
@@ -26,12 +26,27 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
     public delegate void FrameMatAcquiredCallback(Mat mat, Matrix4x4 projectionMatrix, Matrix4x4 cameraToWorldMatrix, XRCameraIntrinsics cameraIntrinsics, long timestamp);
 
     /// <summary>
-    /// ARFoundationCamera to mat helper.
-    /// v 1.0.0
-    /// Depends on ARFoundation version 4.1.7 or later.
-    /// Depends on OpenCVForUnity version 2.4.1 (WebCamTextureToMatHelper v 1.1.2) or later.
+    /// A helper component class for obtaining camera frames from ARFoundation and converting them to OpenCV <c>Mat</c> format in real-time.
     /// </summary>
-    public class ARFoundationCameraToMatHelper : WebCamTextureToMatHelper
+    /// <remarks>
+    /// The <c>ARFoundationCamera2MatHelper</c> class captures video frames from a device's camera using Unity's ARFoundation framework
+    /// and converts each frame to an OpenCV <c>Mat</c> object every frame. In addition to the camera frame data, this class provides access 
+    /// to ARFoundation's world matrix and projection matrix, enabling applications to perform computer vision tasks in an AR context.
+    /// 
+    /// This component handles necessary transformations and adjustments to align the <c>Mat</c> output with ARFoundation's camera settings,
+    /// ensuring consistency with the device's display orientation and AR session data. It is particularly useful for integrating 
+    /// OpenCV-based image processing algorithms with Unity's AR capabilities.
+    /// 
+    /// <strong>Note:</strong> By setting outputColorFormat to RGBA, processing that does not include extra color conversion is performed.
+    /// <strong>Note:</strong> Depends on ARFoundation version 4.1.7 or later.
+    /// <strong>Note:</strong> Depends on OpenCVForUnity version 2.6.4 or later.
+    /// </remarks>
+    /// <example>
+    /// Attach this component to a GameObject and call <c>GetMat()</c> to retrieve the latest camera frame in <c>Mat</c> format. 
+    /// Additionally, use <c>GetCameraToWorldMatrix()</c> and <c>GetProjectionMatrix()</c> to access AR camera matrices.
+    /// The helper class manages AR session start/stop operations and frame updates internally.
+    /// </example>
+    public class ARFoundationCamera2MatHelper : WebCamTexture2MatHelper
     {
 
         /// <summary>
@@ -225,6 +240,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                     if (hasInitDone)
                         Initialize();
+                    else if (isInitWaiting)
+                        Initialize(autoPlayAfterInitialize);
                 }
             }
         }
@@ -250,6 +267,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                     if (hasInitDone)
                         Initialize();
+                    else if (isInitWaiting)
+                        Initialize(autoPlayAfterInitialize);
                 }
             }
         }
@@ -268,6 +287,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                     if (hasInitDone)
                         Initialize();
+                    else if (isInitWaiting)
+                        Initialize(autoPlayAfterInitialize);
                 }
             }
         }
@@ -288,6 +309,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                     if (hasInitDone)
                         Initialize();
+                    else if (isInitWaiting)
+                        Initialize(autoPlayAfterInitialize);
                 }
             }
         }
@@ -499,6 +522,9 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
             isInitWaiting = true;
 
+            // Wait one frame before starting initialization process
+            yield return null;
+
 
             if (arSessionOrigin == null || arSessionOrigin.camera == null)
             {
@@ -508,7 +534,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 Debug.LogError("ARSessionOrigin cannot be null.");
 
                 if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(ErrorCode.UNKNOWN);
+                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "ARSessionOrigin cannot be null.");
 
                 yield break;
             }
@@ -523,7 +549,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 Debug.LogError("ARCameraManager is not found.");
 
                 if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(ErrorCode.UNKNOWN);
+                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "ARCameraManager is not found.");
 
                 yield break;
             }
@@ -540,7 +566,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     initCoroutine = null;
 
                     if (onErrorOccurred != null)
-                        onErrorOccurred.Invoke(ErrorCode.CAMERA_PERMISSION_DENIED);
+                        onErrorOccurred.Invoke(Source2MatHelperErrorCode.CAMERA_PERMISSION_DENIED, string.Empty);
 
                     yield break;
                 }
@@ -616,7 +642,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 initCoroutine = null;
 
                 if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(ErrorCode.TIMEOUT);
+                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
             }
 
             // Sets the camera resolution and frameRate.
@@ -695,7 +721,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     }
                     else
                     {
-                        frameMat = new Mat(baseMat.rows(), baseMat.cols(), CvType.CV_8UC(Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
+                        frameMat = new Mat(baseMat.rows(), baseMat.cols(), CvType.CV_8UC(Source2MatHelperUtils.Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
                     }
 
                     screenOrientation = Screen.orientation;
@@ -712,7 +738,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     }
 
                     if (isRotatedFrame)
-                        rotatedFrameMat = new Mat(frameMat.cols(), frameMat.rows(), CvType.CV_8UC(Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
+                        rotatedFrameMat = new Mat(frameMat.cols(), frameMat.rows(), CvType.CV_8UC(Source2MatHelperUtils.Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
                     
                     isInitWaiting = false;
                     hasInitDone = true;
@@ -739,7 +765,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 initCoroutine = null;
 
                 if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(ErrorCode.TIMEOUT);
+                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
             }
         }
 
@@ -879,7 +905,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             else
             {
                 pixelBufferMat.copyTo(baseMat);
-                Imgproc.cvtColor(baseMat, frameMat, ColorConversionCodes(baseColorFormat, outputColorFormat));
+                Imgproc.cvtColor(baseMat, frameMat, Source2MatHelperUtils.ColorConversionCodes(baseColorFormat, outputColorFormat));
             }
             
             if (rotatedFrameMat != null)
@@ -1032,12 +1058,12 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Releases all resource used by the <see cref="WebCamTextureToMatHelper"/> object.
+        /// Releases all resource used by the <see cref="ARFoundationCamera2MatHelper"/> object.
         /// </summary>
-        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="WebCamTextureToMatHelper"/>. The
-        /// <see cref="Dispose"/> method leaves the <see cref="WebCamTextureToMatHelper"/> in an unusable state. After
-        /// calling <see cref="Dispose"/>, you must release all references to the <see cref="WebCamTextureToMatHelper"/> so
-        /// the garbage collector can reclaim the memory that the <see cref="WebCamTextureToMatHelper"/> was occupying.</remarks>
+        /// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="ARFoundationCamera2MatHelper"/>. The
+        /// <see cref="Dispose"/> method leaves the <see cref="ARFoundationCamera2MatHelper"/> in an unusable state. After
+        /// calling <see cref="Dispose"/>, you must release all references to the <see cref="ARFoundationCamera2MatHelper"/> so
+        /// the garbage collector can reclaim the memory that the <see cref="ARFoundationCamera2MatHelper"/> was occupying.</remarks>
         public override void Dispose()
         {
             if (colors != null)

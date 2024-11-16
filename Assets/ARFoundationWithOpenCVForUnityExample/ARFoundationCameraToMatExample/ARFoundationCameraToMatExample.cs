@@ -1,4 +1,4 @@
-﻿#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
+#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
@@ -315,7 +315,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 }
 
                 ProcessImage(rotatedFrameMat, grayMat, imageProcessingType);
-                Utils.fastMatToTexture2D(rotatedFrameMat, texture);
+                Utils.matToTexture2D(rotatedFrameMat, texture);
             }
             else
             {
@@ -325,7 +325,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 }
 
                 ProcessImage(rgbaMat, grayMat, imageProcessingType);
-                Utils.fastMatToTexture2D(rgbaMat, texture);
+                Utils.matToTexture2D(rgbaMat, texture);
             }
         }
 

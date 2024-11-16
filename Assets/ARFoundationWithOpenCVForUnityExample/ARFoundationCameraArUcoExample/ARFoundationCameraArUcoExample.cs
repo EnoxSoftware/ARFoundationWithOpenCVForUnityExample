@@ -1,4 +1,4 @@
-﻿#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
+#if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
 using ARFoundationWithOpenCVForUnity.UnityUtils.Helper;
 using OpenCVForUnity.ObjdetectModule;
@@ -20,7 +20,7 @@ namespace ARFoundationWithOpenCVForUnityExample
     /// ARFoundationCamera ArUco Example
     /// An example of ArUco marker detection from an ARFoundation camera image.
     /// </summary>
-    [RequireComponent(typeof(ARFoundationCameraToMatHelper))]
+    [RequireComponent(typeof(ARFoundationCamera2MatHelper))]
     public class ARFoundationCameraArUcoExample : MonoBehaviour
     {
 
@@ -86,7 +86,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// <summary>
         /// The webcam texture to mat helper.
         /// </summary>
-        ARFoundationCameraToMatHelper webCamTextureToMatHelper;
+        ARFoundationCamera2MatHelper webCamTextureToMatHelper;
 
         /// <summary>
         /// The rgb mat.
@@ -133,7 +133,8 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             fpsMonitor = GetComponent<FpsMonitor>();
 
-            webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCameraToMatHelper>();
+            webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCamera2MatHelper>();
+            webCamTextureToMatHelper.outputColorFormat = Source2MatHelperColorFormat.RGBA;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
             webCamTextureToMatHelper.frameMatAcquired += OnFrameMatAcquired;
 #endif // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
@@ -151,21 +152,21 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             Debug.Log("OnWebCamTextureToMatHelperInitialized");
 
-            Mat webCamTextureMat = webCamTextureToMatHelper.GetMat();
+            Mat rgbaMat = webCamTextureToMatHelper.GetMat();
 
-            texture = new Texture2D(webCamTextureMat.cols(), webCamTextureMat.rows(), TextureFormat.RGBA32, false);
-            Utils.fastMatToTexture2D(webCamTextureMat, texture);
+            texture = new Texture2D(rgbaMat.cols(), rgbaMat.rows(), TextureFormat.RGBA32, false);
+            Utils.matToTexture2D(rgbaMat, texture);
 
             rawCameraImage.texture = texture;
-            float heightScale = (float)webCamTextureMat.height() / webCamTextureMat.width();
+            float heightScale = (float)rgbaMat.height() / rgbaMat.width();
             rawCameraImage.rectTransform.sizeDelta = new Vector2(640, 640 * heightScale);
 
             Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
             if (fpsMonitor != null)
             {
-                fpsMonitor.Add("width", webCamTextureMat.width().ToString());
-                fpsMonitor.Add("height", webCamTextureMat.height().ToString());
+                fpsMonitor.Add("width", rgbaMat.width().ToString());
+                fpsMonitor.Add("height", rgbaMat.height().ToString());
                 fpsMonitor.Add("orientation", Screen.orientation.ToString());
                 fpsMonitor.Add("IsFrontFacing", webCamTextureToMatHelper.IsFrontFacing().ToString());
                 fpsMonitor.Add("requestedFacingDirection", webCamTextureToMatHelper.requestedFacingDirection.ToString());
@@ -250,8 +251,8 @@ namespace ARFoundationWithOpenCVForUnityExample
 
 #else // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
 
-            float width = webCamTextureMat.width();
-            float height = webCamTextureMat.height();
+            float width = rgbaMat.width();
+            float height = rgbaMat.height();
 
             int max_d = (int)Mathf.Max(width, height);
             fx = max_d;
@@ -280,7 +281,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             Debug.Log("distCoeffs " + distCoeffs.dump());
 
 
-            rgbMat = new Mat(webCamTextureMat.rows(), webCamTextureMat.cols(), CvType.CV_8UC3);
+            rgbMat = new Mat(rgbaMat.rows(), rgbaMat.cols(), CvType.CV_8UC3);
 
 
             ids = new Mat();
@@ -341,13 +342,14 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// Raises the webcam texture to mat helper error occurred event.
         /// </summary>
         /// <param name="errorCode">Error code.</param>
-        public void OnWebCamTextureToMatHelperErrorOccurred(WebCamTextureToMatHelper.ErrorCode errorCode)
+        /// <param name="message">Message.</param>
+        public void OnWebCamTextureToMatHelperErrorOccurred(Source2MatHelperErrorCode errorCode, string message)
         {
-            Debug.Log("OnWebCamTextureToMatHelperErrorOccurred " + errorCode);
+            Debug.Log("OnWebCamTextureToMatHelperErrorOccurred " + errorCode + ":" + message);
 
             if (fpsMonitor != null)
             {
-                fpsMonitor.consoleText = errorCode.ToString();
+                fpsMonitor.consoleText = "ErrorCode: " + errorCode + ":" + message;
             }
         }
 
