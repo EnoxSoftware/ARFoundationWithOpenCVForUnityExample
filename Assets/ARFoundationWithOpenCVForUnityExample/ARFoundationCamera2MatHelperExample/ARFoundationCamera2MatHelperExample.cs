@@ -18,9 +18,13 @@ namespace ARFoundationWithOpenCVForUnityExample
     [RequireComponent(typeof(ARFoundationCamera2MatHelper))]
     public class ARFoundationCamera2MatHelperExample : MonoBehaviour
     {
+        [Header("Output")]
+        /// <summary>
+        /// The RawImage for previewing the result.
+        /// </summary>
+        public RawImage resultPreview;
 
-        [SerializeField]
-        public Camera mainCamera = default;
+        [Space(10)]
 
         /// <summary>
         /// The requested resolution dropdown.
@@ -108,10 +112,9 @@ namespace ARFoundationWithOpenCVForUnityExample
             texture = new Texture2D(rgbaMat.cols(), rgbaMat.rows(), TextureFormat.RGBA32, false);
             Utils.matToTexture2D(rgbaMat, texture);
 
-            gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+            resultPreview.texture = texture;
+            resultPreview.GetComponent<AspectRatioFitter>().aspectRatio = (float)texture.width / texture.height;
 
-            gameObject.transform.localScale = new Vector3(rgbaMat.cols(), rgbaMat.rows(), 1);
-            Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
             if (fpsMonitor != null)
             {
@@ -134,21 +137,6 @@ namespace ARFoundationWithOpenCVForUnityExample
                 fpsMonitor.Add("GetDisplayRotationAngle", webCamTextureToMatHelper.GetDisplayRotationAngle().ToString());
                 fpsMonitor.Add("GetDisplayFlipVertical", webCamTextureToMatHelper.GetDisplayFlipVertical().ToString());
                 fpsMonitor.Add("GetDisplayFlipHorizontal", webCamTextureToMatHelper.GetDisplayFlipHorizontal().ToString());
-            }
-
-
-            float width = rgbaMat.width();
-            float height = rgbaMat.height();
-
-            float widthScale = (float)Screen.width / width;
-            float heightScale = (float)Screen.height / height;
-            if (widthScale < heightScale)
-            {
-                mainCamera.orthographicSize = (width * (float)Screen.height / (float)Screen.width) / 2;
-            }
-            else
-            {
-                mainCamera.orthographicSize = height / 2;
             }
 
             double fx;
@@ -206,6 +194,8 @@ namespace ARFoundationWithOpenCVForUnityExample
 
 #else // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
 
+            float width = rgbaMat.width();
+            float height = rgbaMat.height();
             int max_d = (int)Mathf.Max(width, height);
             fx = max_d;
             fy = max_d;

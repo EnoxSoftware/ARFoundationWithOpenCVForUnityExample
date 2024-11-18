@@ -4,6 +4,7 @@ using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityUtils;
 using System;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,10 +14,10 @@ using UnityEngine.XR.ARSubsystems;
 namespace ARFoundationWithOpenCVForUnityExample
 {
     /// <summary>
-    /// ARFoundationCameraToMat Example
+    /// ConvertAsync ARFoundationCameraToMat Example
     /// An example of converting an ARFoundation camera image to OpenCV's Mat format.
     /// </summary>
-    public class ARFoundationCameraToMatExample : MonoBehaviour
+    public class ConvertAsyncARFoundationCameraToMatExample : MonoBehaviour
     {
         [Header("Output")]
         /// <summary>
@@ -169,7 +170,6 @@ namespace ARFoundationWithOpenCVForUnityExample
                         fpsMonitor.Add("displayFlipVertical", displayFlipVertical.ToString());
                         fpsMonitor.Add("displayFlipHorizontal", displayFlipHorizontal.ToString());
                     }
-
                 }
 
                 /*
@@ -226,9 +226,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             if (hasInitDone && isPlaying)
             {
                 XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, TextureFormat.RGBA32, XRCpuImage.Transformation.None);
-                image.Convert(conversionParams, (IntPtr)rgbaMat.dataAddr(), (int)rgbaMat.total() * (int)rgbaMat.elemSize());
-
-                DisplayImage();
+                image.ConvertAsync(conversionParams, ProcessImage);
 
                 if (fpsMonitor != null)
                 {
@@ -277,6 +275,22 @@ namespace ARFoundationWithOpenCVForUnityExample
             }
 
             image.Dispose();
+        }
+
+        private void ProcessImage(XRCpuImage.AsyncConversionStatus status, XRCpuImage.ConversionParams conversionParams, NativeArray<byte> data)
+        {
+            if (status != XRCpuImage.AsyncConversionStatus.Ready)
+            {
+                Debug.LogErrorFormat("Async request failed with status {0}", status);
+                return;
+            }
+
+            if (hasInitDone)
+            {
+                MatUtils.copyToMat<byte>(data, rgbaMat);
+
+                DisplayImage();
+            }
         }
 
         protected void DisplayImage()

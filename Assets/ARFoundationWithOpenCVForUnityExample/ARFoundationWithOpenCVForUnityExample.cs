@@ -11,7 +11,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         public static string GetARFoundationVersion()
         {
-            return "4.2.10";
+            return "5.1.5";
         }
 
         [Header("UI")]
@@ -90,6 +90,11 @@ namespace ARFoundationWithOpenCVForUnityExample
         public void OnARFoundationCameraToMatExampleButtonClick()
         {
             SceneManager.LoadScene("ARFoundationCameraToMatExample");
+        }
+
+        public void OnConvertAsyncARFoundationCameraToMatExampleButtonClick()
+        {
+            SceneManager.LoadScene("ConvertAsyncARFoundationCameraToMatExample");
         }
 
         public void OnARFoundationCamera2MatHelperExampleButtonClick()

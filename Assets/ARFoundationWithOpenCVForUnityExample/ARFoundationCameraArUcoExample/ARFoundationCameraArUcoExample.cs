@@ -23,11 +23,13 @@ namespace ARFoundationWithOpenCVForUnityExample
     [RequireComponent(typeof(ARFoundationCamera2MatHelper))]
     public class ARFoundationCameraArUcoExample : MonoBehaviour
     {
-
+        [Header("Output")]
         /// <summary>
         /// The raw camera image.
         /// </summary>
         public RawImage rawCameraImage;
+
+        [Space(10)]
 
         /// <summary>
         /// The dictionary identifier.
@@ -163,6 +165,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
             Debug.Log("Screen.width " + Screen.width + " Screen.height " + Screen.height + " Screen.orientation " + Screen.orientation);
 
+
             if (fpsMonitor != null)
             {
                 fpsMonitor.Add("width", rgbaMat.width().ToString());
@@ -175,17 +178,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 fpsMonitor.Add("currentLightEstimation", webCamTextureToMatHelper.currentLightEstimation.ToString());
             }
 
-
-            // If the WebCam is front facing, flip the Mat horizontally. Required for successful detection of AR markers.
-            if (webCamTextureToMatHelper.IsFrontFacing() && !webCamTextureToMatHelper.flipHorizontal)
-            {
-                webCamTextureToMatHelper.flipHorizontal = true;
-            }
-            else if (!webCamTextureToMatHelper.IsFrontFacing() && webCamTextureToMatHelper.flipHorizontal)
-            {
-                webCamTextureToMatHelper.flipHorizontal = false;
-            }
-
+            webCamTextureToMatHelper.flipHorizontal = webCamTextureToMatHelper.IsFrontFacing();
 
             // set camera parameters.
             double fx;

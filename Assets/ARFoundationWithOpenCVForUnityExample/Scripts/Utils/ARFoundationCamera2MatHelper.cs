@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using Unity.Collections;
+using Unity.XR.CoreUtils;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.XR.ARFoundation;
@@ -38,7 +39,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
     /// OpenCV-based image processing algorithms with Unity's AR capabilities.
     /// 
     /// <strong>Note:</strong> By setting outputColorFormat to RGBA, processing that does not include extra color conversion is performed.
-    /// <strong>Note:</strong> Depends on ARFoundation version 4.1.7 or later.
+    /// <strong>Note:</strong> Depends on ARFoundation version 5.1.5 or later.
     /// <strong>Note:</strong> Depends on OpenCVForUnity version 2.6.4 or later.
     /// </remarks>
     /// <example>
@@ -52,21 +53,21 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         /// <summary>
         /// This will be called whenever a new camera frame image available is converted to Mat.
         /// The Mat object's type is 'CV_8UC4' or 'CV_8UC3' or 'CV_8UC1' (ColorFormat is determined by the outputColorFormat setting).
-        /// You must properly initialize the ARFoundationCameraToMatHelperf, 
+        /// You must properly initialize the ARFoundationCamera2MatHelperf, 
         /// including calling Play() before this event will begin firing.
         /// </summary>
         public virtual event FrameMatAcquiredCallback frameMatAcquired;
 
         /// <summary>
-        /// The ARSessionOrigin to get the linked AR Camera and ARCameraManager.
+        /// The XROrigin to get the linked AR Camera and ARCameraManager.
         /// </summary>
-        [SerializeField, FormerlySerializedAs("arSessionOrigin"), TooltipAttribute("The ARSessionOrigin to get the linked AR Camera and ARCameraManager.")]
-        protected ARSessionOrigin _arSessionOrigin;
+        [SerializeField, FormerlySerializedAs("xROrigin"), TooltipAttribute("The XROrigin to get the linked AR Camera and ARCameraManager.")]
+        protected XROrigin _xROrigin;
 
-        public virtual ARSessionOrigin arSessionOrigin
+        public virtual XROrigin xROrigin
         {
-            get { return _arSessionOrigin; }
-            set { _arSessionOrigin = value; }
+            get { return _xROrigin; }
+            set { _xROrigin = value; }
         }
 
         protected XRCameraIntrinsics cameraIntrinsics;
@@ -458,17 +459,92 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             }
 
 
-            XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, TextureFormat.RGBA32);
-            image.Convert(conversionParams, (IntPtr)pixelBufferMat.dataAddr(), (int)pixelBufferMat.total() * (int)pixelBufferMat.elemSize());
+            bool isRotatedFrame = false;
+            if (displayRotationAngle == 90 || displayRotationAngle == 270)
+            {
+                if (!rotate90Degree)
+                    isRotatedFrame = true;
+            }
+            else if (rotate90Degree)
+            {
+                isRotatedFrame = true;
+            }
 
-            didUpdateThisFrame = true;
-            didUpdatePreviewPixelBufferInCurrentFrame = true;
+            bool _flipVertical = default;
+            bool _flipHorizontal = default;
+            if (isRotatedFrame)
+            {
+                if (displayRotationAngle == 90 || displayRotationAngle == 270)
+                {
+                    // (Orientation is Portrait, rotate90Degree is false)
+                    _flipVertical = displayFlipVertical ? !flipHorizontal : flipHorizontal;
+                    _flipHorizontal = displayFlipHorizontal ? !flipVertical : flipVertical;
+                }
+                else
+                {
+                    // (Orientation is Landscape, rotate90Degrees is true)
+                    _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
+                    _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                }
+            }
+            else
+            {
+                if (displayRotationAngle == 90 || displayRotationAngle == 270)
+                {
+                    // (Orientation is Portrait, rotate90Degree is true)
+                    _flipVertical = displayFlipVertical ? flipHorizontal : !flipHorizontal;
+                    _flipHorizontal = displayFlipHorizontal ? flipVertical : !flipVertical;
+                }
+                else
+                {
+                    // (Orientation is Landscape, rotate90Degrees is false)
+                    _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
+                    _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                }
+            }
+
+            int flipCode = calculateFlipCode(_flipVertical, _flipHorizontal);
+            XRCpuImage.Transformation transformation = default;
+            if (flipCode == int.MinValue)
+            {
+                transformation = XRCpuImage.Transformation.None;
+            }
+            else if (flipCode == 0)
+            {
+                transformation = XRCpuImage.Transformation.MirrorX;
+            }
+            else if (flipCode == 1)
+            {
+                transformation = XRCpuImage.Transformation.MirrorY;
+            }
+            else if (flipCode == -1)
+            {
+                transformation = XRCpuImage.Transformation.MirrorX | XRCpuImage.Transformation.MirrorY;
+            }
+
+            XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, TextureFormat.RGBA32, transformation);
+            image.ConvertAsync(conversionParams, ProcessImage);            
 
             image.Dispose();
+        }
 
-            if (hasInitDone && frameMatAcquired != null)
+        protected virtual void ProcessImage(XRCpuImage.AsyncConversionStatus status, XRCpuImage.ConversionParams conversionParams, NativeArray<byte> data)
+        {
+            if (status != XRCpuImage.AsyncConversionStatus.Ready)
             {
-                frameMatAcquired.Invoke(GetMat(), GetProjectionMatrix(), GetCameraToWorldMatrix(), cameraIntrinsics, timestampNs);
+                Debug.LogErrorFormat("Async request failed with status {0}", status);
+                return;
+            }
+
+            didUpdateThisFrame = true;
+            didUpdatePreviewPixelBufferInCurrentFrame = true; 
+
+            if (hasInitDone)
+            {
+                MatUtils.copyToMat<byte>(data, pixelBufferMat);
+
+                if (frameMatAcquired != null)
+                    frameMatAcquired.Invoke(GetMat(), GetProjectionMatrix(), GetCameraToWorldMatrix(), cameraIntrinsics, timestampNs);
             }
         }
 
@@ -526,20 +602,20 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             yield return null;
 
 
-            if (arSessionOrigin == null || arSessionOrigin.camera == null)
+            if (xROrigin == null || xROrigin.Camera == null)
             {
                 isInitWaiting = false;
                 initCoroutine = null;
 
-                Debug.LogError("ARSessionOrigin cannot be null.");
+                Debug.LogError("XROrigin cannot be null.");
 
                 if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "ARSessionOrigin cannot be null.");
+                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "XROrigin cannot be null.");
 
                 yield break;
             }
 
-            cameraManager = arSessionOrigin.camera.GetComponent<ARCameraManager>();
+            cameraManager = xROrigin.Camera.GetComponent<ARCameraManager>();
 
             if (cameraManager == null || cameraManager.subsystem == null || !cameraManager.subsystem.running)
             {
@@ -710,7 +786,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 else if (didUpdateThisFrame)
                 {
 
-                    Debug.Log("ARFoundationCameraToMatHelper:: " + "UniqueID:" + cameraManager.name + " width:" + previewWidth + " height:" + previewHeight + " fps:" + previewFramerate
+                    Debug.Log("ARFoundationCamera2MatHelper:: " + "UniqueID:" + cameraManager.name + " width:" + previewWidth + " height:" + previewHeight + " fps:" + previewFramerate
                     + " isFrongFacing:" + (cameraManager.currentFacingDirection == CameraFacingDirection.User));
 
                     baseMat = new Mat(previewHeight, previewWidth, CvType.CV_8UC4);
@@ -861,7 +937,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         /// <returns>The camera to world matrix.</returns>
         public override Matrix4x4 GetCameraToWorldMatrix()
         {
-            return (hasInitDone && arSessionOrigin != null && arSessionOrigin.camera != null) ? arSessionOrigin.camera.cameraToWorldMatrix : Matrix4x4.identity;
+            return (hasInitDone && xROrigin != null && xROrigin.Camera != null) ? xROrigin.Camera.cameraToWorldMatrix : Matrix4x4.identity;
         }
 
         /// <summary>
@@ -907,46 +983,68 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 pixelBufferMat.copyTo(baseMat);
                 Imgproc.cvtColor(baseMat, frameMat, Source2MatHelperUtils.ColorConversionCodes(baseColorFormat, outputColorFormat));
             }
-            
+
             if (rotatedFrameMat != null)
             {
-                if (displayRotationAngle == 90 || displayRotationAngle == 270)
-                {
-                    // (Orientation is Portrait, rotate90Degree is false)
-                    bool _flipVertical = displayFlipVertical ? !flipHorizontal : flipHorizontal;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipVertical : flipVertical;
-                    FlipMat(frameMat, _flipVertical, _flipHorizontal);
-                }
-                else
-                {
-                    // (Orientation is Landscape, rotate90Degrees is true)
-                    bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
-                    FlipMat(frameMat, _flipVertical, _flipHorizontal);
-                }
-
                 Core.rotate(frameMat, rotatedFrameMat, Core.ROTATE_90_CLOCKWISE);
                 return rotatedFrameMat;
             }
             else
             {
-                if (displayRotationAngle == 90 || displayRotationAngle == 270)
-                {
-                    // (Orientation is Portrait, rotate90Degree is true)
-                    bool _flipVertical = displayFlipVertical ? flipHorizontal : !flipHorizontal;
-                    bool _flipHorizontal = displayFlipHorizontal ? flipVertical : !flipVertical;
-                    FlipMat(frameMat, _flipVertical, _flipHorizontal);
-                }
-                else
-                {
-                    // (Orientation is Landscape, rotate90Degrees is false)
-                    bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
-                    FlipMat(frameMat, _flipVertical, _flipHorizontal);
-                }
-
                 return frameMat;
             }
+        }
+
+        protected virtual int calculateFlipCode(bool flipVertical, bool flipHorizontal)
+        {
+            int flipCode = int.MinValue;
+
+            if (displayRotationAngle == 180 || displayRotationAngle == 270)
+            {
+                flipCode = -1;
+            }
+
+            if (flipVertical)
+            {
+                if (flipCode == int.MinValue)
+                {
+                    flipCode = 0;
+                }
+                else if (flipCode == 0)
+                {
+                    flipCode = int.MinValue;
+                }
+                else if (flipCode == 1)
+                {
+                    flipCode = -1;
+                }
+                else if (flipCode == -1)
+                {
+                    flipCode = 1;
+                }
+            }
+
+            if (flipHorizontal)
+            {
+                if (flipCode == int.MinValue)
+                {
+                    flipCode = 1;
+                }
+                else if (flipCode == 0)
+                {
+                    flipCode = -1;
+                }
+                else if (flipCode == 1)
+                {
+                    flipCode = int.MinValue;
+                }
+                else if (flipCode == -1)
+                {
+                    flipCode = 0;
+                }
+            }
+
+            return flipCode;
         }
 
         /// <summary>

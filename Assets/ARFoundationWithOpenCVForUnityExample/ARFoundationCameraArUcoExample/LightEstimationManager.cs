@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.XR.ARFoundation;
 
@@ -7,11 +7,11 @@ namespace ARFoundationWithOpenCVForUnityExample
     public class LightEstimationManager : MonoBehaviour
     {
         public ARCameraManager cameraManager;
-        new private Light light;
+        private Light _light;
 
         void Awake()
         {
-            light = GetComponent<Light>();
+            _light = GetComponent<Light>();
         }
 
         void OnEnable()
@@ -35,19 +35,19 @@ namespace ARFoundationWithOpenCVForUnityExample
             if (args.lightEstimation.averageBrightness.HasValue)
             {
                 float? averageBrightness = args.lightEstimation.averageBrightness.Value;
-                light.intensity = averageBrightness.Value;
+                _light.intensity = averageBrightness.Value;
             }
 
             if (args.lightEstimation.averageColorTemperature.HasValue)
             {
                 float? averageColorTemperature = args.lightEstimation.averageColorTemperature.Value;
-                light.colorTemperature = averageColorTemperature.Value;
+                _light.colorTemperature = averageColorTemperature.Value;
             }
 
             if (args.lightEstimation.colorCorrection.HasValue)
             {
                 Color? colorCorrection = args.lightEstimation.colorCorrection.Value;
-                light.color = colorCorrection.Value;
+                _light.color = colorCorrection.Value;
             }
 
             if (args.lightEstimation.ambientSphericalHarmonics.HasValue)
@@ -60,19 +60,19 @@ namespace ARFoundationWithOpenCVForUnityExample
             if (args.lightEstimation.mainLightDirection.HasValue)
             {
                 Vector3? mainLightDirection = args.lightEstimation.mainLightDirection;
-                light.transform.rotation = Quaternion.LookRotation(mainLightDirection.Value);
+                _light.transform.rotation = Quaternion.LookRotation(mainLightDirection.Value);
             }
 
             if (args.lightEstimation.mainLightColor.HasValue)
             {
                 Color? mainLightColor = args.lightEstimation.mainLightColor;
-                light.color = mainLightColor.Value;
+                _light.color = mainLightColor.Value;
             }
 
             if (args.lightEstimation.averageMainLightBrightness.HasValue)
             {
                 float? averageMainLightBrightness = args.lightEstimation.averageMainLightBrightness;
-                light.intensity = averageMainLightBrightness.Value;
+                _light.intensity = averageMainLightBrightness.Value;
             }
         }
     }

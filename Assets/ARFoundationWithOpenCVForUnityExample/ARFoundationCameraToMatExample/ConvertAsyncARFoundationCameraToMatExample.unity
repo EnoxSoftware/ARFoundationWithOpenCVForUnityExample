@@ -378,7 +378,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnPauseButtonClick
         m_Mode: 1
         m_Arguments:
@@ -631,7 +632,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnImageProcessingTypeDropdownValueChanged
         m_Mode: 0
         m_Arguments:
@@ -848,7 +850,7 @@ MonoBehaviour:
   m_LightEstimationMode: -1
   m_AutoFocus: 1
   m_LightEstimation: 0
-  m_FacingDirection: 1
+  m_FacingDirection: 2
   m_RenderMode: 0
 --- !u!81 &417264190
 AudioListener:
@@ -1776,7 +1778,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnBackButtonClick
         m_Mode: 1
         m_Arguments:
@@ -1937,7 +1940,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnStopButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2367,7 +2371,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnChangeCameraButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2929,7 +2934,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ConvertAsyncARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnPlayButtonClick
         m_Mode: 1
         m_Arguments:
@@ -3014,7 +3020,7 @@ GameObject:
   - component: {fileID: 1709852087}
   - component: {fileID: 1709852086}
   m_Layer: 0
-  m_Name: ARFoundationCameraToMatExample
+  m_Name: ConvertAsyncARFoundationCameraToMatExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3063,7 +3069,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1709852081}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b76b14898a0cfc246bb115e926532923, type: 3}
+  m_Script: {fileID: 11500000, guid: 3387c20bb422168428a7b0d075d78475, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   resultPreview: {fileID: 1388259506}

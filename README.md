@@ -8,9 +8,9 @@
 - Android (Pixel, Galaxy S10+) / iOS (iPhoneSE2)
 - Unity >= 2021.3.35f1+
 - Scripting backend MONO / IL2CPP
-- [AR Foundation] 4.2.10+
-- [ARCore XR Plugin] 4.2.10+
-- [ARKit XR Plugin] 4.2.10+
+- [AR Foundation] 5.1.5+
+- [ARCore XR Plugin] 5.1.5+
+- [ARKit XR Plugin] 5.1.5+
 - [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.6.4+
 
 
@@ -36,6 +36,7 @@
     * Target minimum iOS Version : 12.0
     * Architecture : ARM64
 1. Open the menu "Edit => Project Settings => XR Plug-in Management (iOS)" and check "ARKit".
+    * (It seems that the camera cannot switch to the inner camera unless the Face tracking subsystem is enabled here.)
 1. Add the "Assets/ARFoundationWithOpenCVForUnityExample/*.unity" files to the "Scenes In Build" list in the "Build Settings" window.
 1. Build and Deploy to Android and iOS.
     *  (Print the AR marker "CanonicalMarker-d10-i1-sp500-bb1.pdf" on an A4 size paper)  
