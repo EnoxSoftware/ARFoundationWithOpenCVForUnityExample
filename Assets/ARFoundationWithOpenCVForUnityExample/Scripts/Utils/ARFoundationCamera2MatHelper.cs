@@ -1,8 +1,13 @@
+#if !OPENCV_DONT_USE_WEBCAMTEXTURE_API
+
 #pragma warning disable 0067
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.UnityUtils.Helper;
+#if UNITY_EDITOR
+using OpenCVForUnity.UnityUtils.Helper.Editor;
+#endif
 using System;
 using System.Collections;
 using System.Linq;
@@ -38,9 +43,25 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
     /// ensuring consistency with the device's display orientation and AR session data. It is particularly useful for integrating 
     /// OpenCV-based image processing algorithms with Unity's AR capabilities.
     /// 
-    /// <strong>Note:</strong> By setting outputColorFormat to RGBA, processing that does not include extra color conversion is performed.
-    /// <strong>Note:</strong> Depends on ARFoundation version 5.1.5 or later.
-    /// <strong>Note:</strong> Depends on OpenCVForUnity version 2.6.4 or later.
+    /// <para>
+    /// FrameMatAcquiredCallback:
+    /// The <c>FrameMatAcquiredCallback</c> delegate is invoked each time a new frame is captured and converted to a Mat object.
+    /// This delegate wraps the <c>ARCameraManager.frameReceived</c> callback to provide the frame data 
+    /// in Mat format, along with the projection matrix, camera-to-world matrix, camera intrinsics and timestamp for the captured frame.
+    /// </para>
+    /// <para>
+    /// <strong>Usage Notes:</strong>
+    /// <list type="bullet">
+    /// <item>
+    /// The Mat object passed to the callback is managed by the helper class and should not be stored for long-term use. 
+    /// Copy the data if further processing is required beyond the callback's scope.
+    /// </item>
+    /// </list>
+    /// </para>
+    /// 
+    /// <para><strong>Note:</strong> By setting outputColorFormat to RGBA, processing that does not include extra color conversion is performed.</para>
+    /// <para><strong>Note:</strong> Depends on ARFoundation version 5.1.5 or later.</para>
+    /// <para><strong>Note:</strong> Depends on OpenCVForUnity version 2.6.4 or later.</para>
     /// </remarks>
     /// <example>
     /// Attach this component to a GameObject and call <c>GetMat()</c> to retrieve the latest camera frame in <c>Mat</c> format. 
@@ -58,12 +79,15 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         /// </summary>
         public virtual event FrameMatAcquiredCallback frameMatAcquired;
 
-        /// <summary>
-        /// The XROrigin to get the linked AR Camera and ARCameraManager.
-        /// </summary>
+#if UNITY_EDITOR
+        [OpenCVForUnityRuntimeDisable]
+#endif
         [SerializeField, FormerlySerializedAs("xROrigin"), TooltipAttribute("The XROrigin to get the linked AR Camera and ARCameraManager.")]
         protected XROrigin _xROrigin;
 
+        /// <summary>
+        /// The XROrigin to get the linked AR Camera and ARCameraManager.
+        /// </summary>
         public virtual XROrigin xROrigin
         {
             get { return _xROrigin; }
@@ -73,7 +97,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected XRCameraIntrinsics cameraIntrinsics;
 
         /// <summary>
-        /// Returns the camera intrinsics.
+        /// Return the camera intrinsics.
         /// </summary>
         /// <returns>The camera intrinsics.</returns>
         public virtual XRCameraIntrinsics GetCameraIntrinsics()
@@ -84,7 +108,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected ARCameraFrameEventArgs frameEventArgs;
 
         /// <summary>
-        /// Returns the frameEventArgs.
+        /// Return the frameEventArgs.
         /// </summary>
         /// <returns>The frameEventArgs.</returns>
         public virtual ARCameraFrameEventArgs GetFrameEventArgs()
@@ -95,7 +119,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected long timestampNs;
 
         /// <summary>
-        /// Returns the timestampNs.
+        /// Return the timestampNs.
         /// </summary>
         /// <returns>The timestampNs.</returns>
         public virtual long GetTimestampNs()
@@ -106,7 +130,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected ARCameraManager cameraManager = default;
 
         /// <summary>
-        /// Returns the ARCameraManager.
+        /// Return the ARCameraManager.
         /// </summary>
         /// <returns>The ARCameraManager.</returns>
         public virtual ARCameraManager GetARCameraManager()
@@ -117,7 +141,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected int displayRotationAngle = 0;
 
         /// <summary>
-        /// Returns the display rotation angle.
+        /// Return the display rotation angle.
         /// </summary>
         /// <returns>The display rotation angle.</returns>
         public virtual int GetDisplayRotationAngle()
@@ -128,7 +152,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected bool displayFlipVertical = false;
 
         /// <summary>
-        /// Returns the display flip vertical.
+        /// Return the display flip vertical.
         /// </summary>
         /// <returns>The display flip vertical.</returns>
         public virtual bool GetDisplayFlipVertical()
@@ -139,7 +163,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         protected bool displayFlipHorizontal = false;
 
         /// <summary>
-        /// Returns the display flip horizontal.
+        /// Return the display flip horizontal.
         /// </summary>
         /// <returns>The display flip horizontal.</returns>
         public virtual bool GetDisplayFlipHorizontal()
@@ -148,7 +172,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Transforms the mat to display direction.
+        /// Transform the mat to display direction.
         /// Please do not dispose of the returned mat as it will be reused.
         /// </summary>
         /// <param name="srcMat">srcMat.</param>
@@ -181,14 +205,22 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     // (Orientation is Portrait, rotate90Degree is false)
                     bool _flipVertical = displayFlipVertical ? !flipHorizontal : flipHorizontal;
                     bool _flipHorizontal = displayFlipHorizontal ? !flipVertical : flipVertical;
-                    FlipMat(srcMat, _flipVertical, _flipHorizontal);
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
+#else
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, webCamDevice.isFrontFacing, webCamTexture.videoRotationAngle);
+#endif
                 }
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is true)
                     bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
                     bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
-                    FlipMat(srcMat, _flipVertical, _flipHorizontal);
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
+#else
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, webCamDevice.isFrontFacing, webCamTexture.videoRotationAngle);
+#endif
                 }
 
                 Core.rotate(srcMat, dstMat, Core.ROTATE_90_CLOCKWISE);
@@ -206,14 +238,22 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     // (Orientation is Portrait, rotate90Degree is true)
                     bool _flipVertical = displayFlipVertical ? flipHorizontal : !flipHorizontal;
                     bool _flipHorizontal = displayFlipHorizontal ? flipVertical : !flipVertical;
-                    FlipMat(srcMat, _flipVertical, _flipHorizontal);
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
+#else
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, webCamDevice.isFrontFacing, webCamTexture.videoRotationAngle);
+#endif
                 }
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is false)
                     bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
                     bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
-                    FlipMat(srcMat, _flipVertical, _flipHorizontal);
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
+#else
+                    FlipMat(srcMat, _flipVertical, _flipHorizontal, webCamDevice.isFrontFacing, webCamTexture.videoRotationAngle);
+#endif
                 }
 
                 srcMat.copyTo(dstMat);
@@ -223,7 +263,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
 
-        #region --ARFoundation CameraManager Properties--
+#region --ARFoundation CameraManager Properties--
 
         public virtual bool autoFocusEnabled => GetARCameraManager() != null ? GetARCameraManager().autoFocusEnabled : default;
 
@@ -294,7 +334,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             }
         }
 
-        #endregion
+#endregion
 
 
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
@@ -409,8 +449,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     m_DisplayRotationMatrix[1, 1] = affineBasisY.y;
 
 #if UNITY_IOS
-                Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
-                m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
+                    Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
+                    m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 #endif // UNITY_IOS
 
                     displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
@@ -584,7 +624,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Initializes this instance by coroutine.
+        /// Initialize this instance by coroutine.
         /// </summary>
         protected override IEnumerator _Initialize()
         {
@@ -846,7 +886,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Starts the camera.
+        /// Start the active camera.
         /// </summary>
         public override void Play()
         {
@@ -860,7 +900,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Pauses the active camera.
+        /// Pause the active camera.
         /// </summary>
         public override void Pause()
         {
@@ -868,7 +908,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Stops the active camera.
+        /// Stop the active camera.
         /// </summary>
         public override void Stop()
         {
@@ -883,7 +923,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Indicates whether the active camera is currently playing.
+        /// Indicate whether the active camera is currently playing.
         /// </summary>
         /// <returns><c>true</c>, if the active camera is playing, <c>false</c> otherwise.</returns>
         public override bool IsPlaying()
@@ -892,7 +932,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Indicates whether the active camera device is currently front facng.
+        /// Indicate whether the active camera device is currently front facng.
         /// </summary>
         /// <returns><c>true</c>, if the active camera device is front facng, <c>false</c> otherwise.</returns>
         public override bool IsFrontFacing()
@@ -903,7 +943,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Returns the active camera device name.
+        /// Return the active camera device name.
         /// </summary>
         /// <returns>The active camera device name.</returns>
         public override string GetDeviceName()
@@ -914,7 +954,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Returns the active camera framerate.
+        /// Return the active camera framerate.
         /// </summary>
         /// <returns>The active camera framerate.</returns>
         public override float GetFPS()
@@ -923,7 +963,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Returns the active WebcamTexture.
+        /// Return the active WebcamTexture.
         /// </summary>
         /// <returns>The active WebcamTexture.</returns>
         public override WebCamTexture GetWebCamTexture()
@@ -932,7 +972,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Returns the camera to world matrix.
+        /// Return the camera to world matrix.
         /// </summary>
         /// <returns>The camera to world matrix.</returns>
         public override Matrix4x4 GetCameraToWorldMatrix()
@@ -941,7 +981,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Returns the projection matrix matrix.
+        /// Return the projection matrix matrix.
         /// </summary>
         /// <returns>The projection matrix.</returns>
         public override Matrix4x4 GetProjectionMatrix()
@@ -950,7 +990,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Indicates whether the video buffer of the frame has been updated.
+        /// Indicate whether the video buffer of the frame has been updated.
         /// </summary>
         /// <returns><c>true</c>, if the video buffer has been updated <c>false</c> otherwise.</returns>
         public override bool DidUpdateThisFrame()
@@ -962,10 +1002,12 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Gets the mat of the current frame.
+        /// Get the mat of the current frame.
+        /// </summary>
+        /// <remarks>
         /// The Mat object's type is 'CV_8UC4' or 'CV_8UC3' or 'CV_8UC1' (ColorFormat is determined by the outputColorFormat setting).
         /// Please do not dispose of the returned mat as it will be reused.
-        /// </summary>
+        /// </remarks>
         /// <returns>The mat of the current frame.</returns>
         public override Mat GetMat()
         {
@@ -1048,10 +1090,14 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         }
 
         /// <summary>
-        /// Flips the mat.
+        /// Flip Mat
         /// </summary>
-        /// <param name="mat">Mat.</param>
-        protected override void FlipMat(Mat mat, bool flipVertical, bool flipHorizontal)
+        /// <param name="mat"></param>
+        /// <param name="flipVertical"></param>
+        /// <param name="flipHorizontal"></param>
+        /// <param name="isFrontFacing"></param>
+        /// <param name="videoRotationAngle"></param>
+        protected override void FlipMat(Mat mat, bool flipVertical, bool flipHorizontal, bool isFrontFacing, int videoRotationAngle)
         {
             int flipCode = int.MinValue;
 
@@ -1170,7 +1216,6 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             if (isInitWaiting)
             {
                 CancelInitCoroutine();
-
                 ReleaseResources();
             }
             else if (hasInitDone)
@@ -1186,3 +1231,5 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
     }
 }
+
+#endif

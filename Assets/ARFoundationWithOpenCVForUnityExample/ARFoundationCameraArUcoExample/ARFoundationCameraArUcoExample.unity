@@ -3970,8 +3970,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1709852085}
-  - component: {fileID: 1709852086}
   - component: {fileID: 1709852088}
+  - component: {fileID: 1709852086}
   - component: {fileID: 1709852087}
   m_Layer: 0
   m_Name: ARFoundationCameraArUcoExample
@@ -4057,7 +4057,7 @@ MonoBehaviour:
   _flipVertical: 0
   _flipHorizontal: 0
   _outputColorFormat: 3
-  _timeoutFrameCount: 300
+  _timeoutFrameCount: 1500
   _onInitialized:
     m_PersistentCalls:
       m_Calls:
