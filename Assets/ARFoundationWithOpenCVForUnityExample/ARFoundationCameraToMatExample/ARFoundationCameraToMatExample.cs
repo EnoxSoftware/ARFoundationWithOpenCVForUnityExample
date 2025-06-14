@@ -119,6 +119,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 Debug.Log(" format:" + image.format + " isFrongFacing:" + (cameraManager.currentFacingDirection == CameraFacingDirection.User));
 
 
+#if USE_ARFOUNDATION_5
                 // Remove scaling and offset factors from the camera display matrix while maintaining orientation.
                 // Decompose that matrix to extract the rotation and flipping factors.
                 // https://github.com/Unity-Technologies/arfoundation-samples/blob/88179bab2b180dd90229d9ec995204be47da1cc1/Assets/Scripts/DisplayDepthImage.cs#L333
@@ -171,6 +172,45 @@ namespace ARFoundationWithOpenCVForUnityExample
                     }
 
                 }
+#else
+                // Remove scaling and offset factors from the camera display matrix while maintaining orientation.
+                // Decompose that matrix to extract the rotation and flipping factors.
+                // https://github.com/Unity-Technologies/arfoundation-samples/blob/362a2596f35b9e45cb73920a9f8fffb1777e7d36/Assets/Scripts/Runtime/Occlusion/DisplayDepthImage.cs#L358
+                if (eventArgs.displayMatrix.HasValue)
+                {
+                    // Copy the display rotation matrix from the camera.
+                    Matrix4x4 cameraMatrix = eventArgs.displayMatrix ?? Matrix4x4.identity;
+
+                    Vector2 affineBasisX = new Vector2(cameraMatrix[0, 0], cameraMatrix[1, 0]);
+                    Vector2 affineBasisY = new Vector2(cameraMatrix[0, 1], cameraMatrix[1, 1]);
+                    Vector2 affineTranslation = new Vector2(cameraMatrix[2, 0], cameraMatrix[2, 1]);
+                    affineBasisX = affineBasisX.normalized;
+                    affineBasisY = affineBasisY.normalized;
+                    Matrix4x4 m_DisplayRotationMatrix = Matrix4x4.identity;
+                    m_DisplayRotationMatrix[0, 0] = affineBasisX.x;
+                    m_DisplayRotationMatrix[0, 1] = affineBasisY.x;
+                    m_DisplayRotationMatrix[1, 0] = affineBasisX.y;
+                    m_DisplayRotationMatrix[1, 1] = affineBasisY.y;
+
+                    Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
+                    m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
+
+                    displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    Vector3 localScale = ARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
+                    displayFlipVertical = Mathf.Sign(localScale.y) == -1;
+                    displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
+
+
+                    if (fpsMonitor != null)
+                    {
+                        fpsMonitor.Add("displayMatrix", "\n" + eventArgs.displayMatrix.ToString());
+                        fpsMonitor.Add("displayRotationAngle", displayRotationAngle.ToString());
+                        fpsMonitor.Add("displayFlipVertical", displayFlipVertical.ToString());
+                        fpsMonitor.Add("displayFlipHorizontal", displayFlipHorizontal.ToString());
+                    }
+
+                }
+#endif // USE_ARFOUNDATION_5
 
                 /*
                 // Generate a camera matrix from cameraIntrinsics values.

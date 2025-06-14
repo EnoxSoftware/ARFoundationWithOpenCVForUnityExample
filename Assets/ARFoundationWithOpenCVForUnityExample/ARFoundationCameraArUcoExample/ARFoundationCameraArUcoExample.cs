@@ -13,6 +13,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using Unity.XR.CoreUtils;
 
 namespace ARFoundationWithOpenCVForUnityExample
 {
@@ -64,9 +65,9 @@ namespace ARFoundationWithOpenCVForUnityExample
         public ARGameObject arGameObject;
 
         /// <summary>
-        /// The AR camera.
+        /// The XR Origin.
         /// </summary>
-        public Camera arCamera;
+        public XROrigin xROrigin;
 
         [Space(10)]
 
@@ -461,14 +462,8 @@ namespace ARFoundationWithOpenCVForUnityExample
             // Convert to transform matrix.
             ARM = ARUtils.ConvertPoseDataToMatrix(ref poseData, true);
 
-            // Apply the effect (flipping factors) of the projection matrix applied to the ARCamera by the ARFoundationBackground component to the ARM.
-            ARM = fitARFoundationBackgroundMatrix * ARM;
-
-            // When detecting the AR marker from a horizontal inverted image (front facing camera),
-            // will need to apply an inverted X matrix to the transform matrix to match the ARFoundationBackground component display.
-            ARM = fitHelpersFlipMatrix * ARM;
-
-            ARM = arCamera.transform.localToWorldMatrix * ARM;
+            // Transform the matrix from camera space to world space using the ARFoundation camera's transform
+            ARM = xROrigin.Camera.transform.localToWorldMatrix * ARM;
 
             if (enableLerpFilter)
             {

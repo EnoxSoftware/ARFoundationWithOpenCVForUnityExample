@@ -1,17 +1,17 @@
 # ARFoundation With OpenCVForUnity Example
 - An example of integrating ARFoundation with OpenCVForUnity.
 - An example of replacing WebCamTextureToMatHelper with ARFoundationCameraToMatHelper.
-- An example of ArUco marker detection from an ARFoundation camera image.
+- An example of ArUco marker detection from an ARFoundation camera image and overlaying AR object."
 
 
 ## Environment
 - Android (Pixel, Galaxy S10+) / iOS (iPhoneSE2)
-- Unity >= 2021.3.35f1+
+- Unity >= 6000.0.51f1+
 - Scripting backend MONO / IL2CPP
-- [AR Foundation] 5.1.5+
-- [ARCore XR Plugin] 5.1.5+
-- [ARKit XR Plugin] 5.1.5+
-- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.6.4+
+- [AR Foundation] 6.0.5+ (To use ARFoundation 5.xx, add 'USE_ARFOUNDATION_5' to the 'Scripting Define Symbols' in the Project Settings)
+- [ARCore XR Plugin] 6.0.5+
+- [ARKit XR Plugin] 6.0.5+
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.6.6+
 
 
 ## Demo
