@@ -3,10 +3,10 @@
 #pragma warning disable 0067
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
-using OpenCVForUnity.UnityUtils;
-using OpenCVForUnity.UnityUtils.Helper;
+using OpenCVForUnity.UnityIntegration;
+using OpenCVForUnity.UnityIntegration.Helper.Source2Mat;
 #if UNITY_EDITOR
-using OpenCVForUnity.UnityUtils.Helper.Editor;
+using OpenCVForUnity.UnityIntegration.Helper.Source2Mat.Editor;
 #endif
 using System;
 using System.Collections;
@@ -18,7 +18,7 @@ using UnityEngine.Serialization;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
-namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
+namespace ARFoundationWithOpenCVForUnity.UnityIntegration.Helper.Source2Mat
 {
     /// <summary>
     /// This is called every time there is a new frame image mat available.
@@ -77,18 +77,18 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         /// You must properly initialize the ARFoundationCamera2MatHelperf, 
         /// including calling Play() before this event will begin firing.
         /// </summary>
-        public virtual event FrameMatAcquiredCallback frameMatAcquired;
+        public virtual event FrameMatAcquiredCallback FrameMatAcquired;
 
 #if UNITY_EDITOR
         [OpenCVForUnityRuntimeDisable]
 #endif
-        [SerializeField, FormerlySerializedAs("xROrigin"), TooltipAttribute("The XROrigin to get the linked AR Camera and ARCameraManager.")]
+        [SerializeField, TooltipAttribute("The XROrigin to get the linked AR Camera and ARCameraManager.")]
         protected XROrigin _xROrigin;
 
         /// <summary>
         /// The XROrigin to get the linked AR Camera and ARCameraManager.
         /// </summary>
-        public virtual XROrigin xROrigin
+        public virtual XROrigin XROrigin
         {
             get { return _xROrigin; }
             set { _xROrigin = value; }
@@ -203,8 +203,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 if (displayRotationAngle == 90 || displayRotationAngle == 270)
                 {
                     // (Orientation is Portrait, rotate90Degree is false)
-                    bool _flipVertical = displayFlipVertical ? !flipHorizontal : flipHorizontal;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipVertical : flipVertical;
+                    bool _flipVertical = displayFlipVertical ? !FlipHorizontal : FlipHorizontal;
+                    bool _flipHorizontal = displayFlipHorizontal ? !FlipVertical : FlipVertical;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
                     FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
 #else
@@ -214,8 +214,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is true)
-                    bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                    bool _flipVertical = displayFlipVertical ? !FlipVertical : FlipVertical;
+                    bool _flipHorizontal = displayFlipHorizontal ? !FlipHorizontal : FlipHorizontal;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
                     FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
 #else
@@ -236,8 +236,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 if (displayRotationAngle == 90 || displayRotationAngle == 270)
                 {
                     // (Orientation is Portrait, rotate90Degree is true)
-                    bool _flipVertical = displayFlipVertical ? flipHorizontal : !flipHorizontal;
-                    bool _flipHorizontal = displayFlipHorizontal ? flipVertical : !flipVertical;
+                    bool _flipVertical = displayFlipVertical ? FlipHorizontal : !FlipHorizontal;
+                    bool _flipHorizontal = displayFlipHorizontal ? FlipVertical : !FlipVertical;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
                     FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
 #else
@@ -247,8 +247,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is false)
-                    bool _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    bool _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                    bool _flipVertical = displayFlipVertical ? !FlipVertical : FlipVertical;
+                    bool _flipHorizontal = displayFlipHorizontal ? !FlipHorizontal : FlipHorizontal;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
                     FlipMat(srcMat, _flipVertical, _flipHorizontal, false, 0);
 #else
@@ -265,9 +265,9 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
 #region --ARFoundation CameraManager Properties--
 
-        public virtual bool autoFocusEnabled => GetARCameraManager() != null ? GetARCameraManager().autoFocusEnabled : default;
+        public virtual bool AutoFocusEnabled => GetARCameraManager() != null ? GetARCameraManager().autoFocusEnabled : default;
 
-        public virtual bool autoFocusRequested
+        public virtual bool AutoFocusRequested
         {
             get { return GetARCameraManager() != null ? GetARCameraManager().autoFocusRequested : default; }
             set
@@ -287,13 +287,13 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             }
         }
 
-        public virtual CameraFacingDirection currentFacingDirection => GetARCameraManager() != null ? GetARCameraManager().currentFacingDirection : default;
+        public virtual CameraFacingDirection CurrentFacingDirection => GetARCameraManager() != null ? GetARCameraManager().currentFacingDirection : default;
 
-        public virtual LightEstimation currentLightEstimation => GetARCameraManager() != null ? GetARCameraManager().currentLightEstimation : default;
+        public virtual LightEstimation CurrentLightEstimation => GetARCameraManager() != null ? GetARCameraManager().currentLightEstimation : default;
 
-        public virtual bool permissionGranted => GetARCameraManager() != null ? GetARCameraManager().permissionGranted : default;
+        public virtual bool PermissionGranted => GetARCameraManager() != null ? GetARCameraManager().permissionGranted : default;
 
-        public virtual CameraFacingDirection requestedFacingDirection
+        public virtual CameraFacingDirection RequestedFacingDirection
         {
             get { return GetARCameraManager() != null ? GetARCameraManager().requestedFacingDirection : default; }
             set
@@ -314,7 +314,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             }
         }
 
-        public virtual LightEstimation requestedLightEstimation
+        public virtual LightEstimation RequestedLightEstimation
         {
             get { return GetARCameraManager() != null ? GetARCameraManager().requestedLightEstimation : default; }
             set
@@ -339,7 +339,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
 
-        public override float requestedFPS
+        public override float RequestedFPS
         {
             get { return _requestedFPS; }
             set
@@ -454,8 +454,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 #endif // UNITY_IOS
 
-                    displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
-                    Vector3 localScale = ARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
+                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
                     displayFlipVertical = Mathf.Sign(localScale.y) == -1;
                     displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
                 }
@@ -482,8 +482,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 
-                    displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
-                    Vector3 localScale = ARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
+                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
                     displayFlipVertical = Mathf.Sign(localScale.y) == -1;
                     displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
                 }
@@ -532,10 +532,10 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             bool isRotatedFrame = false;
             if (displayRotationAngle == 90 || displayRotationAngle == 270)
             {
-                if (!rotate90Degree)
+                if (!Rotate90Degree)
                     isRotatedFrame = true;
             }
-            else if (rotate90Degree)
+            else if (Rotate90Degree)
             {
                 isRotatedFrame = true;
             }
@@ -547,14 +547,14 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 if (displayRotationAngle == 90 || displayRotationAngle == 270)
                 {
                     // (Orientation is Portrait, rotate90Degree is false)
-                    _flipVertical = displayFlipVertical ? !flipHorizontal : flipHorizontal;
-                    _flipHorizontal = displayFlipHorizontal ? !flipVertical : flipVertical;
+                    _flipVertical = displayFlipVertical ? !FlipHorizontal : FlipHorizontal;
+                    _flipHorizontal = displayFlipHorizontal ? !FlipVertical : FlipVertical;
                 }
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is true)
-                    _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                    _flipVertical = displayFlipVertical ? !FlipVertical : FlipVertical;
+                    _flipHorizontal = displayFlipHorizontal ? !FlipHorizontal : FlipHorizontal;
                 }
             }
             else
@@ -562,14 +562,14 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 if (displayRotationAngle == 90 || displayRotationAngle == 270)
                 {
                     // (Orientation is Portrait, rotate90Degree is true)
-                    _flipVertical = displayFlipVertical ? flipHorizontal : !flipHorizontal;
-                    _flipHorizontal = displayFlipHorizontal ? flipVertical : !flipVertical;
+                    _flipVertical = displayFlipVertical ? FlipHorizontal : !FlipHorizontal;
+                    _flipHorizontal = displayFlipHorizontal ? FlipVertical : !FlipVertical;
                 }
                 else
                 {
                     // (Orientation is Landscape, rotate90Degrees is false)
-                    _flipVertical = displayFlipVertical ? !flipVertical : flipVertical;
-                    _flipHorizontal = displayFlipHorizontal ? !flipHorizontal : flipHorizontal;
+                    _flipVertical = displayFlipVertical ? !FlipVertical : FlipVertical;
+                    _flipHorizontal = displayFlipHorizontal ? !FlipHorizontal : FlipHorizontal;
                 }
             }
 
@@ -611,10 +611,10 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
             if (hasInitDone)
             {
-                MatUtils.copyToMat<byte>(data, pixelBufferMat);
+                OpenCVMatUtils.CopyToMat<byte>(data, pixelBufferMat);
 
-                if (frameMatAcquired != null)
-                    frameMatAcquired.Invoke(GetMat(), GetProjectionMatrix(), GetCameraToWorldMatrix(), cameraIntrinsics, timestampNs);
+                if (FrameMatAcquired != null)
+                    FrameMatAcquired.Invoke(GetMat(), GetProjectionMatrix(), GetCameraToWorldMatrix(), cameraIntrinsics, timestampNs);
             }
         }
 
@@ -662,8 +662,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             {
                 ReleaseResources();
 
-                if (onDisposed != null)
-                    onDisposed.Invoke();
+                if (OnDisposed != null)
+                    OnDisposed.Invoke();
             }
 
             isInitWaiting = true;
@@ -672,20 +672,20 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             yield return null;
 
 
-            if (xROrigin == null || xROrigin.Camera == null)
+            if (XROrigin == null || XROrigin.Camera == null)
             {
                 isInitWaiting = false;
                 initCoroutine = null;
 
                 Debug.LogError("XROrigin cannot be null.");
 
-                if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "XROrigin cannot be null.");
+                if (OnErrorOccurred != null)
+                    OnErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "XROrigin cannot be null.");
 
                 yield break;
             }
 
-            cameraManager = xROrigin.Camera.GetComponent<ARCameraManager>();
+            cameraManager = XROrigin.Camera.GetComponent<ARCameraManager>();
 
             if (cameraManager == null || cameraManager.subsystem == null || !cameraManager.subsystem.running)
             {
@@ -694,8 +694,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                 Debug.LogError("ARCameraManager is not found.");
 
-                if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "ARCameraManager is not found.");
+                if (OnErrorOccurred != null)
+                    OnErrorOccurred.Invoke(Source2MatHelperErrorCode.UNKNOWN, "ARCameraManager is not found.");
 
                 yield break;
             }
@@ -711,15 +711,15 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     isInitWaiting = false;
                     initCoroutine = null;
 
-                    if (onErrorOccurred != null)
-                        onErrorOccurred.Invoke(Source2MatHelperErrorCode.CAMERA_PERMISSION_DENIED, string.Empty);
+                    if (OnErrorOccurred != null)
+                        OnErrorOccurred.Invoke(Source2MatHelperErrorCode.CAMERA_PERMISSION_DENIED, string.Empty);
 
                     yield break;
                 }
             }
 
             // Sets the camera facing direction.
-            CameraFacingDirection newRequestedFacingDirection = requestedIsFrontFacing ? CameraFacingDirection.User : CameraFacingDirection.World;
+            CameraFacingDirection newRequestedFacingDirection = RequestedIsFrontFacing ? CameraFacingDirection.User : CameraFacingDirection.World;
             if (cameraManager.requestedFacingDirection != newRequestedFacingDirection || cameraManager.currentFacingDirection == CameraFacingDirection.None)
             {
                 cameraManager.requestedFacingDirection = newRequestedFacingDirection;
@@ -766,7 +766,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     configurationsLength = configurations.Length;
                 }
 
-                if (initFrameCount > timeoutFrameCount)
+                if (initFrameCount > TimeoutFrameCount)
                 {
                     isTimeout = true;
                     break;
@@ -787,8 +787,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 isInitWaiting = false;
                 initCoroutine = null;
 
-                if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
+                if (OnErrorOccurred != null)
+                    OnErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
             }
 
             // Sets the camera resolution and frameRate.
@@ -848,7 +848,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
             while (true)
             {
-                if (initFrameCount > timeoutFrameCount)
+                if (initFrameCount > TimeoutFrameCount)
                 {
                     isTimeout = true;
                     break;
@@ -861,13 +861,13 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
 
                     baseMat = new Mat(previewHeight, previewWidth, CvType.CV_8UC4);
 
-                    if (baseColorFormat == outputColorFormat)
+                    if (baseColorFormat == OutputColorFormat)
                     {
                         frameMat = baseMat;
                     }
                     else
                     {
-                        frameMat = new Mat(baseMat.rows(), baseMat.cols(), CvType.CV_8UC(Source2MatHelperUtils.Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
+                        frameMat = new Mat(baseMat.rows(), baseMat.cols(), CvType.CV_8UC(Source2MatHelperUtils.Channels(OutputColorFormat)), new Scalar(0, 0, 0, 255));
                     }
 
                     screenOrientation = Screen.orientation;
@@ -875,23 +875,23 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                     bool isRotatedFrame = false;
                     if (displayRotationAngle == 90 || displayRotationAngle == 270)
                     {
-                        if (!rotate90Degree)
+                        if (!Rotate90Degree)
                             isRotatedFrame = true;
                     }
-                    else if (rotate90Degree)
+                    else if (Rotate90Degree)
                     {
                         isRotatedFrame = true;
                     }
 
                     if (isRotatedFrame)
-                        rotatedFrameMat = new Mat(frameMat.cols(), frameMat.rows(), CvType.CV_8UC(Source2MatHelperUtils.Channels(outputColorFormat)), new Scalar(0, 0, 0, 255));
+                        rotatedFrameMat = new Mat(frameMat.cols(), frameMat.rows(), CvType.CV_8UC(Source2MatHelperUtils.Channels(OutputColorFormat)), new Scalar(0, 0, 0, 255));
                     
                     isInitWaiting = false;
                     hasInitDone = true;
                     initCoroutine = null;
 
-                    if (onInitialized != null)
-                        onInitialized.Invoke();
+                    if (OnInitialized != null)
+                        OnInitialized.Invoke();
 
                     break;
                 }
@@ -910,8 +910,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 isInitWaiting = false;
                 initCoroutine = null;
 
-                if (onErrorOccurred != null)
-                    onErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
+                if (OnErrorOccurred != null)
+                    OnErrorOccurred.Invoke(Source2MatHelperErrorCode.TIMEOUT, string.Empty);
             }
         }
 
@@ -1007,7 +1007,7 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
         /// <returns>The camera to world matrix.</returns>
         public override Matrix4x4 GetCameraToWorldMatrix()
         {
-            return (hasInitDone && xROrigin != null && xROrigin.Camera != null) ? xROrigin.Camera.cameraToWorldMatrix : Matrix4x4.identity;
+            return (hasInitDone && XROrigin != null && XROrigin.Camera != null) ? XROrigin.Camera.cameraToWorldMatrix : Matrix4x4.identity;
         }
 
         /// <summary>
@@ -1046,14 +1046,14 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
                 return (rotatedFrameMat != null) ? rotatedFrameMat : frameMat;
             }
 
-            if (baseColorFormat == outputColorFormat)
+            if (baseColorFormat == OutputColorFormat)
             {
                 pixelBufferMat.copyTo(frameMat);
             }
             else
             {
                 pixelBufferMat.copyTo(baseMat);
-                Imgproc.cvtColor(baseMat, frameMat, Source2MatHelperUtils.ColorConversionCodes(baseColorFormat, outputColorFormat));
+                Imgproc.cvtColor(baseMat, frameMat, Source2MatHelperUtils.ColorConversionCodes(baseColorFormat, OutputColorFormat));
             }
 
             if (rotatedFrameMat != null)
@@ -1252,8 +1252,8 @@ namespace ARFoundationWithOpenCVForUnity.UnityUtils.Helper
             {
                 ReleaseResources();
 
-                if (onDisposed != null)
-                    onDisposed.Invoke();
+                if (OnDisposed != null)
+                    OnDisposed.Invoke();
             }
         }
 

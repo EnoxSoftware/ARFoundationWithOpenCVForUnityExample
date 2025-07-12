@@ -2,7 +2,7 @@
 
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
-using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.UnityIntegration;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -157,8 +157,8 @@ namespace ARFoundationWithOpenCVForUnityExample
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 #endif // UNITY_IOS
 
-                    displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
-                    Vector3 localScale = ARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
+                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
                     displayFlipVertical = Mathf.Sign(localScale.y) == -1;
                     displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
 
@@ -195,8 +195,8 @@ namespace ARFoundationWithOpenCVForUnityExample
                     Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 
-                    displayRotationAngle = (int)ARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
-                    Vector3 localScale = ARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
+                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
                     displayFlipVertical = Mathf.Sign(localScale.y) == -1;
                     displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
 
@@ -346,7 +346,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 }
 
                 ProcessImage(rotatedFrameMat, grayMat, imageProcessingType);
-                Utils.matToTexture2D(rotatedFrameMat, texture);
+                OpenCVMatUtils.MatToTexture2D(rotatedFrameMat, texture);
             }
             else
             {
@@ -356,7 +356,7 @@ namespace ARFoundationWithOpenCVForUnityExample
                 }
 
                 ProcessImage(rgbaMat, grayMat, imageProcessingType);
-                Utils.matToTexture2D(rgbaMat, texture);
+                OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
             }
         }
 

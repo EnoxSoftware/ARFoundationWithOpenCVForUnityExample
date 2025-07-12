@@ -1,10 +1,10 @@
 #if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
-using ARFoundationWithOpenCVForUnity.UnityUtils.Helper;
+using ARFoundationWithOpenCVForUnity.UnityIntegration.Helper.Source2Mat;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
-using OpenCVForUnity.UnityUtils;
-using OpenCVForUnity.UnityUtils.Helper;
+using OpenCVForUnity.UnityIntegration;
+using OpenCVForUnity.UnityIntegration.Helper.Source2Mat;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -82,12 +82,12 @@ namespace ARFoundationWithOpenCVForUnityExample
             fpsMonitor = GetComponent<FpsMonitor>();
 
             webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCamera2MatHelper>();
-            webCamTextureToMatHelper.outputColorFormat = Source2MatHelperColorFormat.RGBA;
+            webCamTextureToMatHelper.OutputColorFormat = Source2MatHelperColorFormat.RGBA;
             int width, height;
             Dimensions(requestedResolution, out width, out height);
-            webCamTextureToMatHelper.requestedWidth = width;
-            webCamTextureToMatHelper.requestedHeight = height;
-            webCamTextureToMatHelper.requestedFPS = (int)requestedFPS;
+            webCamTextureToMatHelper.RequestedWidth = width;
+            webCamTextureToMatHelper.RequestedHeight = height;
+            webCamTextureToMatHelper.RequestedFPS = (int)requestedFPS;
             webCamTextureToMatHelper.Initialize();
 
             // Update GUI state
@@ -95,9 +95,9 @@ namespace ARFoundationWithOpenCVForUnityExample
             string[] enumNames = System.Enum.GetNames(typeof(FPSPreset));
             int index = Array.IndexOf(enumNames, requestedFPS.ToString());
             requestedFPSDropdown.value = index;
-            rotate90DegreeToggle.isOn = webCamTextureToMatHelper.rotate90Degree;
-            flipVerticalToggle.isOn = webCamTextureToMatHelper.flipVertical;
-            flipHorizontalToggle.isOn = webCamTextureToMatHelper.flipHorizontal;
+            rotate90DegreeToggle.isOn = webCamTextureToMatHelper.Rotate90Degree;
+            flipVerticalToggle.isOn = webCamTextureToMatHelper.FlipVertical;
+            flipHorizontalToggle.isOn = webCamTextureToMatHelper.FlipHorizontal;
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             Mat rgbaMat = webCamTextureToMatHelper.GetMat();
 
             texture = new Texture2D(rgbaMat.cols(), rgbaMat.rows(), TextureFormat.RGBA32, false);
-            Utils.matToTexture2D(rgbaMat, texture);
+            OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
 
             resultPreview.texture = texture;
             resultPreview.GetComponent<AspectRatioFitter>().aspectRatio = (float)texture.width / texture.height;
@@ -122,17 +122,17 @@ namespace ARFoundationWithOpenCVForUnityExample
                 fpsMonitor.Add("width", webCamTextureToMatHelper.GetWidth().ToString());
                 fpsMonitor.Add("height", webCamTextureToMatHelper.GetHeight().ToString());
                 fpsMonitor.Add("camera fps", webCamTextureToMatHelper.GetFPS().ToString());
-                fpsMonitor.Add("isFrontFacing", webCamTextureToMatHelper.IsFrontFacing().ToString());
-                fpsMonitor.Add("rotate90Degree", webCamTextureToMatHelper.rotate90Degree.ToString());
-                fpsMonitor.Add("flipVertical", webCamTextureToMatHelper.flipVertical.ToString());
-                fpsMonitor.Add("flipHorizontal", webCamTextureToMatHelper.flipHorizontal.ToString());
+                fpsMonitor.Add("IsFrontFacing", webCamTextureToMatHelper.IsFrontFacing().ToString());
+                fpsMonitor.Add("Rotate90Degree", webCamTextureToMatHelper.Rotate90Degree.ToString());
+                fpsMonitor.Add("FlipVertical", webCamTextureToMatHelper.FlipVertical.ToString());
+                fpsMonitor.Add("FlipHorizontal", webCamTextureToMatHelper.FlipHorizontal.ToString());
                 fpsMonitor.Add("orientation", Screen.orientation.ToString());
-                fpsMonitor.Add("autoFocusRequested", webCamTextureToMatHelper.autoFocusRequested.ToString());
-                fpsMonitor.Add("autoFocusEnabled", webCamTextureToMatHelper.autoFocusEnabled.ToString());
-                fpsMonitor.Add("requestedFacingDirection", webCamTextureToMatHelper.requestedFacingDirection.ToString());
-                fpsMonitor.Add("currentFacingDirection", webCamTextureToMatHelper.currentFacingDirection.ToString());
-                fpsMonitor.Add("requestedLightEstimation", webCamTextureToMatHelper.requestedLightEstimation.ToString());
-                fpsMonitor.Add("currentLightEstimation", webCamTextureToMatHelper.currentLightEstimation.ToString());
+                fpsMonitor.Add("AutoFocusRequested", webCamTextureToMatHelper.AutoFocusRequested.ToString());
+                fpsMonitor.Add("AutoFocusEnabled", webCamTextureToMatHelper.AutoFocusEnabled.ToString());
+                fpsMonitor.Add("RequestedFacingDirection", webCamTextureToMatHelper.RequestedFacingDirection.ToString());
+                fpsMonitor.Add("CurrentFacingDirection", webCamTextureToMatHelper.CurrentFacingDirection.ToString());
+                fpsMonitor.Add("RequestedLightEstimation", webCamTextureToMatHelper.RequestedLightEstimation.ToString());
+                fpsMonitor.Add("CurrentLightEstimation", webCamTextureToMatHelper.CurrentLightEstimation.ToString());
 
                 fpsMonitor.Add("GetDisplayRotationAngle", webCamTextureToMatHelper.GetDisplayRotationAngle().ToString());
                 fpsMonitor.Add("GetDisplayFlipVertical", webCamTextureToMatHelper.GetDisplayFlipVertical().ToString());
@@ -158,11 +158,11 @@ namespace ARFoundationWithOpenCVForUnityExample
             Matrix4x4 tM = Matrix4x4.Translate(new Vector3(-r.x / 2, -r.y / 2, 0));
             pp = tM.MultiplyPoint3x4(pp);
 
-            Matrix4x4 rotationAndFlipM = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, webCamTextureToMatHelper.rotate90Degree ? 90 : 0),
-                new Vector3(webCamTextureToMatHelper.flipHorizontal ? -1 : 1, webCamTextureToMatHelper.flipVertical ? -1 : 1, 1));
+            Matrix4x4 rotationAndFlipM = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, webCamTextureToMatHelper.Rotate90Degree ? 90 : 0),
+                new Vector3(webCamTextureToMatHelper.FlipHorizontal ? -1 : 1, webCamTextureToMatHelper.FlipVertical ? -1 : 1, 1));
             pp = rotationAndFlipM.MultiplyPoint3x4(pp);
 
-            if (webCamTextureToMatHelper.rotate90Degree)
+            if (webCamTextureToMatHelper.Rotate90Degree)
             {
                 fl = new Vector2(fl.y, fl.x);
                 r = new Vector2Int(r.y, r.x);
@@ -258,7 +258,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
                 //Imgproc.putText (rgbaMat, "W:" + rgbaMat.width () + " H:" + rgbaMat.height () + " SO:" + Screen.orientation, new Point (5, rgbaMat.rows () - 10), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar (255, 255, 255, 255), 2, Imgproc.LINE_AA, false);
 
-                Utils.matToTexture2D(rgbaMat, texture);
+                OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
 
                 if (fpsMonitor != null)
                 {
@@ -317,7 +317,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnChangeCameraButtonClick()
         {
-            webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.requestedIsFrontFacing;
+            webCamTextureToMatHelper.RequestedIsFrontFacing = !webCamTextureToMatHelper.RequestedIsFrontFacing;
         }
 
         /// <summary>
@@ -348,7 +348,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             {
                 requestedFPS = (FPSPreset)value;
 
-                webCamTextureToMatHelper.requestedFPS = (int)requestedFPS;
+                webCamTextureToMatHelper.RequestedFPS = (int)requestedFPS;
             }
         }
 
@@ -357,12 +357,12 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnRotate90DegreeToggleValueChanged()
         {
-            if (rotate90DegreeToggle.isOn != webCamTextureToMatHelper.rotate90Degree)
+            if (rotate90DegreeToggle.isOn != webCamTextureToMatHelper.Rotate90Degree)
             {
-                webCamTextureToMatHelper.rotate90Degree = rotate90DegreeToggle.isOn;
+                webCamTextureToMatHelper.Rotate90Degree = rotate90DegreeToggle.isOn;
 
                 if (fpsMonitor != null)
-                    fpsMonitor.Add("rotate90Degree", webCamTextureToMatHelper.rotate90Degree.ToString());
+                    fpsMonitor.Add("Rotate90Degree", webCamTextureToMatHelper.Rotate90Degree.ToString());
             }
         }
 
@@ -371,12 +371,12 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnFlipVerticalToggleValueChanged()
         {
-            if (flipVerticalToggle.isOn != webCamTextureToMatHelper.flipVertical)
+            if (flipVerticalToggle.isOn != webCamTextureToMatHelper.FlipVertical)
             {
-                webCamTextureToMatHelper.flipVertical = flipVerticalToggle.isOn;
+                webCamTextureToMatHelper.FlipVertical = flipVerticalToggle.isOn;
 
                 if (fpsMonitor != null)
-                    fpsMonitor.Add("flipVertical", webCamTextureToMatHelper.flipVertical.ToString());
+                    fpsMonitor.Add("FlipVertical", webCamTextureToMatHelper.FlipVertical.ToString());
             }
         }
 
@@ -385,12 +385,12 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnFlipHorizontalToggleValueChanged()
         {
-            if (flipHorizontalToggle.isOn != webCamTextureToMatHelper.flipHorizontal)
+            if (flipHorizontalToggle.isOn != webCamTextureToMatHelper.FlipHorizontal)
             {
-                webCamTextureToMatHelper.flipHorizontal = flipHorizontalToggle.isOn;
+                webCamTextureToMatHelper.FlipHorizontal = flipHorizontalToggle.isOn;
 
                 if (fpsMonitor != null)
-                    fpsMonitor.Add("flipHorizontal", webCamTextureToMatHelper.flipHorizontal.ToString());
+                    fpsMonitor.Add("FlipHorizontal", webCamTextureToMatHelper.FlipHorizontal.ToString());
             }
         }
 
@@ -399,12 +399,12 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnChangeAutoFocusButtonClick()
         {
-            webCamTextureToMatHelper.autoFocusRequested = !webCamTextureToMatHelper.autoFocusRequested;
+            webCamTextureToMatHelper.AutoFocusRequested = !webCamTextureToMatHelper.AutoFocusRequested;
 
             if (fpsMonitor != null)
             {
-                fpsMonitor.Add("autoFocusRequested", webCamTextureToMatHelper.autoFocusRequested.ToString());
-                fpsMonitor.Add("autoFocusEnabled", webCamTextureToMatHelper.autoFocusEnabled.ToString());
+                fpsMonitor.Add("AutoFocusRequested", webCamTextureToMatHelper.AutoFocusRequested.ToString());
+                fpsMonitor.Add("AutoFocusEnabled", webCamTextureToMatHelper.AutoFocusEnabled.ToString());
             }
         }
 

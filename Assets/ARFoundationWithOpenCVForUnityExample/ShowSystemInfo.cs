@@ -1,5 +1,5 @@
 ﻿using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.UnityIntegration;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -62,7 +62,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
 
-            dict.Add(ASSET_NAME + " version", Core.NATIVE_LIBRARY_NAME + " " + Utils.getVersion() + " (" + Core.VERSION + ")");
+            dict.Add(ASSET_NAME + " version", Core.NATIVE_LIBRARY_NAME + " " + OpenCVEnv.GetVersion() + " (" + Core.VERSION + ")");
             dict.Add("Build Unity version", Application.unityVersion);
 
 #if UNITY_EDITOR

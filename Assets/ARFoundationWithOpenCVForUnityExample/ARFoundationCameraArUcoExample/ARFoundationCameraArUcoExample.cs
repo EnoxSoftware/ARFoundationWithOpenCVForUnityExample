@@ -1,12 +1,12 @@
 #if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
-using ARFoundationWithOpenCVForUnity.UnityUtils.Helper;
+using ARFoundationWithOpenCVForUnity.UnityIntegration.Helper.Source2Mat;
 using OpenCVForUnity.ObjdetectModule;
 using OpenCVForUnity.Calib3dModule;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
-using OpenCVForUnity.UnityUtils;
-using OpenCVForUnity.UnityUtils.Helper;
+using OpenCVForUnity.UnityIntegration;
+using OpenCVForUnity.UnityIntegration.Helper.Source2Mat;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,6 +14,7 @@ using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using Unity.XR.CoreUtils;
+using static OpenCVForUnity.UnityIntegration.OpenCVARUtils;
 
 namespace ARFoundationWithOpenCVForUnityExample
 {
@@ -137,9 +138,9 @@ namespace ARFoundationWithOpenCVForUnityExample
             fpsMonitor = GetComponent<FpsMonitor>();
 
             webCamTextureToMatHelper = gameObject.GetComponent<ARFoundationCamera2MatHelper>();
-            webCamTextureToMatHelper.outputColorFormat = Source2MatHelperColorFormat.RGBA;
+            webCamTextureToMatHelper.OutputColorFormat = Source2MatHelperColorFormat.RGBA;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
-            webCamTextureToMatHelper.frameMatAcquired += OnFrameMatAcquired;
+            webCamTextureToMatHelper.FrameMatAcquired += OnFrameMatAcquired;
 #endif // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
             webCamTextureToMatHelper.Initialize();
 
@@ -158,7 +159,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             Mat rgbaMat = webCamTextureToMatHelper.GetMat();
 
             texture = new Texture2D(rgbaMat.cols(), rgbaMat.rows(), TextureFormat.RGBA32, false);
-            Utils.matToTexture2D(rgbaMat, texture);
+            OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
 
             rawCameraImage.texture = texture;
             float heightScale = (float)rgbaMat.height() / rgbaMat.width();
@@ -173,13 +174,13 @@ namespace ARFoundationWithOpenCVForUnityExample
                 fpsMonitor.Add("height", rgbaMat.height().ToString());
                 fpsMonitor.Add("orientation", Screen.orientation.ToString());
                 fpsMonitor.Add("IsFrontFacing", webCamTextureToMatHelper.IsFrontFacing().ToString());
-                fpsMonitor.Add("requestedFacingDirection", webCamTextureToMatHelper.requestedFacingDirection.ToString());
-                fpsMonitor.Add("currentFacingDirection", webCamTextureToMatHelper.currentFacingDirection.ToString());
-                fpsMonitor.Add("requestedLightEstimation", webCamTextureToMatHelper.requestedLightEstimation.ToString());
-                fpsMonitor.Add("currentLightEstimation", webCamTextureToMatHelper.currentLightEstimation.ToString());
+                fpsMonitor.Add("requestedFacingDirection", webCamTextureToMatHelper.RequestedFacingDirection.ToString());
+                fpsMonitor.Add("currentFacingDirection", webCamTextureToMatHelper.CurrentFacingDirection.ToString());
+                fpsMonitor.Add("requestedLightEstimation", webCamTextureToMatHelper.RequestedLightEstimation.ToString());
+                fpsMonitor.Add("currentLightEstimation", webCamTextureToMatHelper.CurrentLightEstimation.ToString());
             }
 
-            webCamTextureToMatHelper.flipHorizontal = webCamTextureToMatHelper.IsFrontFacing();
+            webCamTextureToMatHelper.FlipHorizontal = webCamTextureToMatHelper.IsFrontFacing();
 
             // set camera parameters.
             double fx;
@@ -199,11 +200,11 @@ namespace ARFoundationWithOpenCVForUnityExample
             Matrix4x4 tM = Matrix4x4.Translate(new Vector3(-r.x / 2, -r.y / 2, 0));
             pp = tM.MultiplyPoint3x4(pp);
 
-            Matrix4x4 rotationAndFlipM = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, webCamTextureToMatHelper.rotate90Degree ? 90 : 0),
-                new Vector3(webCamTextureToMatHelper.flipHorizontal ? -1 : 1, webCamTextureToMatHelper.flipVertical ? -1 : 1, 1));
+            Matrix4x4 rotationAndFlipM = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, webCamTextureToMatHelper.Rotate90Degree ? 90 : 0),
+                new Vector3(webCamTextureToMatHelper.FlipHorizontal ? -1 : 1, webCamTextureToMatHelper.FlipVertical ? -1 : 1, 1));
             pp = rotationAndFlipM.MultiplyPoint3x4(pp);
 
-            if (webCamTextureToMatHelper.rotate90Degree)
+            if (webCamTextureToMatHelper.Rotate90Degree)
             {
                 fl = new Vector2(fl.y, fl.x);
                 r = new Vector2Int(r.y, r.x);
@@ -295,7 +296,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             fitARFoundationBackgroundMatrix = Matrix4x4.Scale(new Vector3(webCamTextureToMatHelper.GetDisplayFlipHorizontal() ? -1 : 1, webCamTextureToMatHelper.GetDisplayFlipVertical() ? -1 : 1, 1)) * Matrix4x4.identity;
 
             // Create the transform matrix to fit the ARM to the flip properties of the camera helper.
-            fitHelpersFlipMatrix = Matrix4x4.Scale(new Vector3(webCamTextureToMatHelper.flipHorizontal ? -1 : 1, webCamTextureToMatHelper.flipVertical ? -1 : 1, 1)) * Matrix4x4.identity;
+            fitHelpersFlipMatrix = Matrix4x4.Scale(new Vector3(webCamTextureToMatHelper.FlipHorizontal ? -1 : 1, webCamTextureToMatHelper.FlipVertical ? -1 : 1, 1)) * Matrix4x4.identity;
         }
 
         /// <summary>
@@ -376,7 +377,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
             Imgproc.cvtColor(rgbMat, rgbaMat, Imgproc.COLOR_RGB2RGBA);
 
-            Utils.matToTexture2D(rgbaMat, texture);
+            OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
         }
 
 #else // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
@@ -412,7 +413,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 
                 Imgproc.cvtColor(rgbMat, rgbaMat, Imgproc.COLOR_RGB2RGBA);
 
-                Utils.matToTexture2D(rgbaMat, texture);
+                OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
             }
         }
 
@@ -457,10 +458,10 @@ namespace ARFoundationWithOpenCVForUnityExample
             rvec.get(0, 0, rvecArr);
             double[] tvecArr = new double[3];
             tvec.get(0, 0, tvecArr);
-            PoseData poseData = ARUtils.ConvertRvecTvecToPoseData(rvecArr, tvecArr);
+            PoseData poseData = OpenCVARUtils.ConvertRvecTvecToPoseData(rvecArr, tvecArr);
 
             // Convert to transform matrix.
-            ARM = ARUtils.ConvertPoseDataToMatrix(ref poseData, true);
+            ARM = OpenCVARUtils.ConvertPoseDataToMatrix(ref poseData, true);
 
             // Transform the matrix from camera space to world space using the ARFoundation camera's transform
             ARM = xROrigin.Camera.transform.localToWorldMatrix * ARM;
@@ -471,7 +472,7 @@ namespace ARFoundationWithOpenCVForUnityExample
             }
             else
             {
-                ARUtils.SetTransformFromMatrix(arGameObject.transform, ref ARM);
+                OpenCVARUtils.SetTransformFromMatrix(arGameObject.transform, ref ARM);
             }
         }
 
@@ -479,7 +480,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             // reset AR object transform.
             Matrix4x4 i = Matrix4x4.identity;
-            ARUtils.SetTransformFromMatrix(arGameObject.transform, ref i);
+            OpenCVARUtils.SetTransformFromMatrix(arGameObject.transform, ref i);
         }
 
         /// <summary>
@@ -488,7 +489,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         void OnDestroy()
         {
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
-            webCamTextureToMatHelper.frameMatAcquired -= OnFrameMatAcquired;
+            webCamTextureToMatHelper.FrameMatAcquired -= OnFrameMatAcquired;
 #endif // (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR && !DISABLE_ARFOUNDATION_API
             webCamTextureToMatHelper.Dispose();
         }
@@ -530,7 +531,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         /// </summary>
         public void OnChangeCameraButtonClick()
         {
-            webCamTextureToMatHelper.requestedIsFrontFacing = !webCamTextureToMatHelper.requestedIsFrontFacing;
+            webCamTextureToMatHelper.RequestedIsFrontFacing = !webCamTextureToMatHelper.RequestedIsFrontFacing;
 
             // While you can request any of these simultaneously, support for each of these varies greatly among devices.
             // Some platforms may not be able to be simultaneously provide all options, or it may depend on other features (e.g., camera facing direction).
@@ -580,7 +581,7 @@ namespace ARFoundationWithOpenCVForUnityExample
         {
             if (webCamTextureToMatHelper != null && webCamTextureToMatHelper.IsInitialized())
             {
-                webCamTextureToMatHelper.requestedLightEstimation = (webCamTextureToMatHelper.requestedLightEstimation == LightEstimation.None)
+                webCamTextureToMatHelper.RequestedLightEstimation = (webCamTextureToMatHelper.RequestedLightEstimation == LightEstimation.None)
                     ? LightEstimation.AmbientColor | LightEstimation.AmbientIntensity
                     : LightEstimation.None;
             }
