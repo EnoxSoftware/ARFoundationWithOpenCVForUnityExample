@@ -11,7 +11,7 @@
 - [AR Foundation] 6.0.5+ (To use ARFoundation 5.xx, add 'USE_ARFOUNDATION_5' to the 'Scripting Define Symbols' in the Project Settings)
 - [ARCore XR Plugin] 6.0.5+
 - [ARKit XR Plugin] 6.0.5+
-- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 2.6.6+
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 3.0.0+
 
 
 ## Demo
