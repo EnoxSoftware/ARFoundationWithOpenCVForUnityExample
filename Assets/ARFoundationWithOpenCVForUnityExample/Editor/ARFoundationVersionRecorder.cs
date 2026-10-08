@@ -1,31 +1,35 @@
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Scripting;
-using System.IO;
 
 [InitializeOnLoad]
 public static class ARFoundationVersionRecorder
 {
-    static ListRequest _request;
+    // Private Fields
+    private static ListRequest _request;
 
     static ARFoundationVersionRecorder()
     {
         EditorApplication.delayCall += StartVersionCheck;
     }
 
-    static void StartVersionCheck()
+    // Private Methods
+    private static void StartVersionCheck()
     {
         _request = Client.List(true); // true = include indirect dependencies
         EditorApplication.update += CheckRequest;
     }
 
-    static void CheckRequest()
+    private static void CheckRequest()
     {
         if (!_request.IsCompleted)
+        {
             return;
+        }
 
         if (_request.Status == StatusCode.Success)
         {

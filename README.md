@@ -6,12 +6,12 @@
 
 ## Environment
 - Android (Pixel, Galaxy S10+) / iOS (iPhoneSE2)
-- Unity >= 6000.0.51f1+
+- Unity >= 6000.0.83f1+
 - Scripting backend MONO / IL2CPP
-- [AR Foundation] 6.0.5+ (To use ARFoundation 5.xx, add 'USE_ARFOUNDATION_5' to the 'Scripting Define Symbols' in the Project Settings)
-- [ARCore XR Plugin] 6.0.5+
-- [ARKit XR Plugin] 6.0.5+
-- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 3.0.0+
+- [AR Foundation] 6.6.2+ (To use ARFoundation 5.xx, add 'USE_ARFOUNDATION_5' to the 'Scripting Define Symbols' in the Project Settings)
+- [ARCore XR Plugin] 6.6.2+
+- [ARKit XR Plugin] 6.6.2+
+- [OpenCV for Unity](https://assetstore.unity.com/packages/tools/integration/opencv-for-unity-21088?aid=1011l4ehR) 3.0.4+
 
 
 ## Demo
@@ -40,6 +40,7 @@
 1. Add the "Assets/ARFoundationWithOpenCVForUnityExample/*.unity" files to the "Scenes In Build" list in the "Build Settings" window.
 1. Build and Deploy to Android and iOS.
     *  (Print the AR marker "CanonicalMarker-d10-i1-sp500-bb1.pdf" on an A4 size paper)  
+    *  (Print the AR marker "ArUcoMarkers_DICT_4X4_50_0-8.pdf" on an A4 size paper)  
 
 
 ## ScreenShot

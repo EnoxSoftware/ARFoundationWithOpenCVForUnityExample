@@ -1139,7 +1139,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: ARFoundationCamera2MatHelper Example
+  m_Text: ARFoundationCameraToMatHelper Example
 --- !u!222 &795683522
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1550,7 +1550,7 @@ GameObject:
   - component: {fileID: 863814350}
   - component: {fileID: 863814349}
   m_Layer: 5
-  m_Name: ARFoundationCamera2MatHelperExampleButton
+  m_Name: ARFoundationCameraToMatHelperExampleButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1643,7 +1643,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1124998460}
         m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationWithOpenCVForUnityExample,
           Assembly-CSharp
-        m_MethodName: OnARFoundationCamera2MatHelperExampleButtonClick
+        m_MethodName: OnARFoundationCameraToMatHelperExampleButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1738,7 +1738,6 @@ GameObject:
   - component: {fileID: 1124998464}
   - component: {fileID: 1124998460}
   - component: {fileID: 1124998461}
-  - component: {fileID: 1124998462}
   m_Layer: 0
   m_Name: ARFoundationWithOpenCVForUnityExample
   m_TagString: Untagged
@@ -1758,9 +1757,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c50b93c0f9e1044c9e15c85dd244189, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  exampleTitle: {fileID: 346089861}
-  versionInfo: {fileID: 595830809}
-  scrollRect: {fileID: 296877747}
+  ExampleTitle: {fileID: 346089861}
+  VersionInfo: {fileID: 595830809}
+  ScrollRect: {fileID: 296877747}
 --- !u!114 &1124998461
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1773,25 +1772,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d561f63e222234f46bf39529a5407841, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1124998462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1124998459}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 745c797ec046df94aa423a66665a249c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  alignment: 1
-  offset: {x: 10, y: 10}
-  boxVisible: 1
-  boxWidth: 75
-  boxHeight: 30
-  padding: {x: 8, y: 5}
-  consoleHeight: 50
 --- !u!4 &1124998464
 Transform:
   m_ObjectHideFlags: 0
@@ -2611,7 +2591,7 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1677445093}
   - {fileID: 1124998464}
+  - {fileID: 1677445093}
   - {fileID: 1810133384}
   - {fileID: 1374554972}

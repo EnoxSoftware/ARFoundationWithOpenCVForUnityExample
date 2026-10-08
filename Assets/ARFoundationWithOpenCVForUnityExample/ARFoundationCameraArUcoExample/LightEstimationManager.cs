@@ -6,31 +6,36 @@ namespace ARFoundationWithOpenCVForUnityExample
 {
     public class LightEstimationManager : MonoBehaviour
     {
-        public ARCameraManager cameraManager;
+        // Public Fields
+        public ARCameraManager CameraManager;
+
+        // Private Fields
         private Light _light;
 
-        void Awake()
+        // Unity Lifecycle Methods
+        private void Awake()
         {
             _light = GetComponent<Light>();
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
-            if (cameraManager != null)
+            if (CameraManager != null)
             {
-                cameraManager.frameReceived += FrameChanged;
+                CameraManager.frameReceived += FrameChanged;
             }
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
-            if (cameraManager != null)
+            if (CameraManager != null)
             {
-                cameraManager.frameReceived -= FrameChanged;
+                CameraManager.frameReceived -= FrameChanged;
             }
         }
 
-        void FrameChanged(ARCameraFrameEventArgs args)
+        // Private Methods
+        private void FrameChanged(ARCameraFrameEventArgs args)
         {
             if (args.lightEstimation.averageBrightness.HasValue)
             {

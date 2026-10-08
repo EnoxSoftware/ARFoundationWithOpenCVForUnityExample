@@ -1,9 +1,11 @@
 #if !(PLATFORM_LUMIN && !UNITY_EDITOR)
 
+using System;
 using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.Extensions;
 using OpenCVForUnity.ImgprocModule;
 using OpenCVForUnity.UnityIntegration;
-using System;
+using OpenCVForUnity.UnityIntegration.Helper.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -18,87 +20,185 @@ namespace ARFoundationWithOpenCVForUnityExample
     /// </summary>
     public class ARFoundationCameraToMatExample : MonoBehaviour
     {
+        // Enums
+        public enum ImageProcessingType
+        {
+            None,
+            DrawLine,
+            ConvertToGray,
+        }
+
+        // Public Fields
         [Header("Output")]
         /// <summary>
         /// The RawImage for previewing the result.
         /// </summary>
-        public RawImage resultPreview;
+        public RawImage ResultPreview;
 
         [Space(10)]
 
-        [SerializeField, TooltipAttribute("The ARCameraManager which will produce frame events.")]
-        public ARCameraManager cameraManager = default;
+        [TooltipAttribute("The ARCameraManager which will produce frame events.")]
+        public ARCameraManager CameraManager = default;
 
-        [SerializeField, TooltipAttribute("The ARCamera.")]
-        public Camera arCamera;
+        [TooltipAttribute("The ARCamera.")]
+        public Camera ArCamera;
 
         [Header("Processing")]
-        public ImageProcessingType imageProcessingType = ImageProcessingType.None;
-        public Dropdown imageProcessingTypeDropdown;
+        public ImageProcessingType ProcessingType = ImageProcessingType.None;
+        public Dropdown ImageProcessingTypeDropdown;
 
-        Mat rgbaMat;
+        // Private Fields
+        private Mat _rgbaMat;
 
-        Mat rotatedFrameMat;
+        private Mat _rotatedFrameMat;
 
-        Mat grayMat;
+        private Mat _grayMat;
 
-        Texture2D texture;
+        private Texture2D _texture;
 
-        bool hasInitDone = false;
+        private bool _hasInitDone = false;
 
-        bool isPlaying = true;
+        private bool _isPlaying = true;
 
-        ScreenOrientation screenOrientation;
+        private ScreenOrientation _screenOrientation;
 
-        int displayRotationAngle = 0;
-        bool displayFlipVertical = false;
-        bool displayFlipHorizontal = false;
+        private int _displayRotationAngle = 0;
+        private bool _displayFlipVertical = false;
+        private bool _displayFlipHorizontal = false;
 
-        FpsMonitor fpsMonitor;
+        private FpsMonitor _fpsMonitor;
 
-        // Use this for initialization
-        void Start()
+        // Unity Lifecycle Methods
+        private void Start()
         {
-            Debug.Assert(cameraManager != null, "camera manager cannot be null");
+            Debug.Assert(CameraManager != null, "camera manager cannot be null");
 
-            fpsMonitor = GetComponent<FpsMonitor>();
-
+            _fpsMonitor = GetComponent<FpsMonitor>();
 
             // Checks camera permission state.
-            if (fpsMonitor != null && !cameraManager.permissionGranted)
+            if (_fpsMonitor != null && !CameraManager.permissionGranted)
             {
-                fpsMonitor.consoleText = "Camera permission has not been granted.";
+                _fpsMonitor.ConsoleText = "Camera permission has not been granted.";
             }
 
             // Update UI
-            if (imageProcessingTypeDropdown != null)
-                imageProcessingTypeDropdown.value = (int)imageProcessingType;
-        }
-
-        void OnEnable()
-        {
-            if (cameraManager != null)
+            if (ImageProcessingTypeDropdown != null)
             {
-                cameraManager.frameReceived += OnCameraFrameReceived;
+                ImageProcessingTypeDropdown.value = (int)ProcessingType;
             }
         }
 
-        void OnDisable()
+        private void OnEnable()
         {
-            if (cameraManager != null)
+            if (CameraManager != null)
             {
-                cameraManager.frameReceived -= OnCameraFrameReceived;
+                CameraManager.frameReceived += OnCameraFrameReceived;
             }
         }
 
+        private void OnDisable()
+        {
+            if (CameraManager != null)
+            {
+                CameraManager.frameReceived -= OnCameraFrameReceived;
+            }
+        }
+
+        private void Update()
+        {
+
+        }
+
+        private void OnDestroy()
+        {
+            Dispose();
+        }
+
+        // Public Methods
+        /// <summary>
+        /// Raises the back button click event.
+        /// </summary>
+        public void OnBackButtonClick()
+        {
+            SceneManager.LoadScene("ARFoundationWithOpenCVForUnityExample");
+        }
+
+        /// <summary>
+        /// Raises the play button click event.
+        /// </summary>
+        public void OnPlayButtonClick()
+        {
+            if (_hasInitDone)
+            {
+                _isPlaying = true;
+            }
+        }
+
+        /// <summary>
+        /// Raises the pause button click event.
+        /// </summary>
+        public void OnPauseButtonClick()
+        {
+            if (_hasInitDone)
+            {
+                _isPlaying = false;
+            }
+        }
+
+        /// <summary>
+        /// Raises the stop button click event.
+        /// </summary>
+        public void OnStopButtonClick()
+        {
+            if (_hasInitDone)
+            {
+                _isPlaying = false;
+            }
+        }
+
+        /// <summary>
+        /// Raises the change camera button click event.
+        /// </summary>
+        public void OnChangeCameraButtonClick()
+        {
+            if (_hasInitDone)
+            {
+                // https://github.com/Unity-Technologies/arfoundation-samples/blob/main/Assets/Scripts/CameraSwapper.cs
+                CameraFacingDirection newFacingDirection;
+                switch (CameraManager.requestedFacingDirection)
+                {
+                    case CameraFacingDirection.World:
+                        newFacingDirection = CameraFacingDirection.User;
+                        break;
+                    case CameraFacingDirection.User:
+                    default:
+                        newFacingDirection = CameraFacingDirection.World;
+                        break;
+                }
+
+                Debug.Log($"Switching ARCameraManager.requestedFacingDirection from {CameraManager.requestedFacingDirection} to {newFacingDirection}");
+                CameraManager.requestedFacingDirection = newFacingDirection;
+
+                _hasInitDone = false;
+            }
+        }
+
+        public void OnImageProcessingTypeDropdownValueChanged(int result)
+        {
+            ProcessingType = (ImageProcessingType)result;
+        }
+
+        // Protected Methods
         protected void OnCameraFrameReceived(ARCameraFrameEventArgs eventArgs)
         {
-            if ((cameraManager == null) || (cameraManager.subsystem == null) || !cameraManager.subsystem.running)
+            if ((CameraManager == null) || (CameraManager.subsystem == null) || !CameraManager.subsystem.running)
+            {
                 return;
+            }
 
             // Attempt to get the latest camera image. If this method succeeds,
             // it acquires a native resource that must be disposed (see below).
-            if (!cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
+            if (!CameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
             {
                 return;
             }
@@ -106,18 +206,17 @@ namespace ARFoundationWithOpenCVForUnityExample
             int width = image.width;
             int height = image.height;
 
-            if (!hasInitDone || rgbaMat == null || rgbaMat.cols() != width || rgbaMat.rows() != height || screenOrientation != Screen.orientation)
+            if (!_hasInitDone || _rgbaMat == null || _rgbaMat.cols() != width || _rgbaMat.rows() != height || _screenOrientation != Screen.orientation)
             {
                 Dispose();
 
-                screenOrientation = Screen.orientation;
+                _screenOrientation = Screen.orientation;
 
-                XRCameraConfiguration config = (XRCameraConfiguration)cameraManager.currentConfiguration;
+                XRCameraConfiguration config = (XRCameraConfiguration)CameraManager.currentConfiguration;
                 int framerate = config.framerate.HasValue ? config.framerate.Value : -1;
 
-                Debug.Log("name:" + cameraManager.name + " width:" + width + " height:" + height + " fps:" + framerate);
-                Debug.Log(" format:" + image.format + " isFrongFacing:" + (cameraManager.currentFacingDirection == CameraFacingDirection.User));
-
+                Debug.Log("name:" + CameraManager.name + " width:" + width + " height:" + height + " fps:" + framerate);
+                Debug.Log(" format:" + image.format + " isFrongFacing:" + (CameraManager.currentFacingDirection == CameraFacingDirection.User));
 
 #if USE_ARFOUNDATION_5
                 // Remove scaling and offset factors from the camera display matrix while maintaining orientation.
@@ -157,18 +256,18 @@ namespace ARFoundationWithOpenCVForUnityExample
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 #endif // UNITY_IOS
 
-                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    _displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
                     Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
-                    displayFlipVertical = Mathf.Sign(localScale.y) == -1;
-                    displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
+                    _displayFlipVertical = Mathf.Sign(localScale.y) == -1;
+                    _displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
 
 
-                    if (fpsMonitor != null)
+                    if (_fpsMonitor != null)
                     {
-                        fpsMonitor.Add("displayMatrix", "\n" + eventArgs.displayMatrix.ToString());
-                        fpsMonitor.Add("displayRotationAngle", displayRotationAngle.ToString());
-                        fpsMonitor.Add("displayFlipVertical", displayFlipVertical.ToString());
-                        fpsMonitor.Add("displayFlipHorizontal", displayFlipHorizontal.ToString());
+                        _fpsMonitor.Add("displayMatrix", "\n" + eventArgs.displayMatrix.ToString());
+                        _fpsMonitor.Add("displayRotationAngle", _displayRotationAngle.ToString());
+                        _fpsMonitor.Add("displayFlipVertical", _displayFlipVertical.ToString());
+                        _fpsMonitor.Add("displayFlipHorizontal", _displayFlipHorizontal.ToString());
                     }
 
                 }
@@ -195,26 +294,24 @@ namespace ARFoundationWithOpenCVForUnityExample
                     Matrix4x4 FlipYMatrix = Matrix4x4.Scale(new Vector3(1, -1, 1));
                     m_DisplayRotationMatrix = FlipYMatrix.inverse * m_DisplayRotationMatrix;
 
-                    displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
+                    _displayRotationAngle = (int)OpenCVARUtils.ExtractRotationFromMatrix(ref m_DisplayRotationMatrix).eulerAngles.z;
                     Vector3 localScale = OpenCVARUtils.ExtractScaleFromMatrix(ref m_DisplayRotationMatrix);
-                    displayFlipVertical = Mathf.Sign(localScale.y) == -1;
-                    displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
+                    _displayFlipVertical = Mathf.Sign(localScale.y) == -1;
+                    _displayFlipHorizontal = Mathf.Sign(localScale.x) == -1;
 
-
-                    if (fpsMonitor != null)
+                    if (_fpsMonitor != null)
                     {
-                        fpsMonitor.Add("displayMatrix", "\n" + eventArgs.displayMatrix.ToString());
-                        fpsMonitor.Add("displayRotationAngle", displayRotationAngle.ToString());
-                        fpsMonitor.Add("displayFlipVertical", displayFlipVertical.ToString());
-                        fpsMonitor.Add("displayFlipHorizontal", displayFlipHorizontal.ToString());
+                        _fpsMonitor.Add("displayMatrix", "\n" + eventArgs.displayMatrix.ToString());
+                        _fpsMonitor.Add("displayRotationAngle", _displayRotationAngle.ToString());
+                        _fpsMonitor.Add("displayFlipVertical", _displayFlipVertical.ToString());
+                        _fpsMonitor.Add("displayFlipHorizontal", _displayFlipHorizontal.ToString());
                     }
-
                 }
 #endif // USE_ARFOUNDATION_5
 
                 /*
                 // Generate a camera matrix from cameraIntrinsics values.
-                if (cameraManager.TryGetIntrinsics(out var cameraIntrinsics))
+                if (CameraManager.TryGetIntrinsics(out var cameraIntrinsics))
                 {
                     var focalLength = cameraIntrinsics.focalLength;
                     var principalPoint = cameraIntrinsics.principalPoint;
@@ -229,88 +326,86 @@ namespace ARFoundationWithOpenCVForUnityExample
                 }
                 */
 
-                rgbaMat = new Mat(height, width, CvType.CV_8UC4);
+                _rgbaMat = new Mat(height, width, CvType.CV_8UC4);
 
-                if (displayRotationAngle == 90 || displayRotationAngle == 270)
+                if (_displayRotationAngle == 90 || _displayRotationAngle == 270)
                 {
                     width = image.height;
                     height = image.width;
 
-                    rotatedFrameMat = new Mat(height, width, CvType.CV_8UC4);
+                    _rotatedFrameMat = new Mat(height, width, CvType.CV_8UC4);
                 }
 
-                grayMat = new Mat(height, width, CvType.CV_8UC1);
-                texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+                _grayMat = new Mat(height, width, CvType.CV_8UC1);
+                _texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
 
-                resultPreview.texture = texture;
-                resultPreview.GetComponent<AspectRatioFitter>().aspectRatio = (float)texture.width / texture.height;
+                ResultPreview.texture = _texture;
+                ResultPreview.GetComponent<AspectRatioFitter>().aspectRatio = (float)_texture.width / _texture.height;
 
-                hasInitDone = true;
+                _hasInitDone = true;
 
-
-                if (fpsMonitor != null)
+                if (_fpsMonitor != null)
                 {
-                    fpsMonitor.Add("width", image.width.ToString());
-                    fpsMonitor.Add("height", image.height.ToString());
-                    fpsMonitor.Add("framerate", framerate.ToString());
-                    fpsMonitor.Add("format", image.format.ToString());
-                    fpsMonitor.Add("orientation", Screen.orientation.ToString());
+                    _fpsMonitor.Add("width", image.width.ToString());
+                    _fpsMonitor.Add("height", image.height.ToString());
+                    _fpsMonitor.Add("framerate", framerate.ToString());
+                    _fpsMonitor.Add("format", image.format.ToString());
+                    _fpsMonitor.Add("orientation", Screen.orientation.ToString());
 
                     //fpsMonitor.Add("FormatSupported", image.FormatSupported(TextureFormat.RGBA32).ToString());
                     //XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, TextureFormat.RGBA32);
                     //fpsMonitor.Add("GetConvertedDataSize", image.GetConvertedDataSize(conversionParams).ToString());
                 }
-
             }
 
-            if (hasInitDone && isPlaying)
+            if (_hasInitDone && _isPlaying)
             {
                 XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, TextureFormat.RGBA32, XRCpuImage.Transformation.None);
-                image.Convert(conversionParams, (IntPtr)rgbaMat.dataAddr(), (int)rgbaMat.total() * (int)rgbaMat.elemSize());
+                image.Convert(conversionParams, (IntPtr)_rgbaMat.dataAddr(), (int)_rgbaMat.total() * (int)_rgbaMat.elemSize());
 
                 DisplayImage();
 
-                if (fpsMonitor != null)
+                if (_fpsMonitor != null)
                 {
-                    fpsMonitor.Add("currentFacingDirection", cameraManager.currentFacingDirection.ToString());
-                    fpsMonitor.Add("autoFocusEnabled", cameraManager.autoFocusEnabled.ToString());
-                    fpsMonitor.Add("currentLightEstimation", cameraManager.currentLightEstimation.ToString());
+                    _fpsMonitor.Add("currentFacingDirection", CameraManager.currentFacingDirection.ToString());
+                    _fpsMonitor.Add("autoFocusEnabled", CameraManager.autoFocusEnabled.ToString());
+                    _fpsMonitor.Add("currentLightEstimation", CameraManager.currentLightEstimation.ToString());
                 }
 
-                if (cameraManager.TryGetIntrinsics(out var cameraIntrinsics))
+                if (CameraManager.TryGetIntrinsics(out var cameraIntrinsics))
                 {
                     var focalLength = cameraIntrinsics.focalLength;
                     var principalPoint = cameraIntrinsics.principalPoint;
 
-                    if (fpsMonitor != null)
+                    if (_fpsMonitor != null)
                     {
-                        fpsMonitor.Add("cameraIntrinsics", "\n" + "FL: " + focalLength.x + "x" + focalLength.y + "\n" + "PP: " + principalPoint.x + "x" + principalPoint.y);
+                        _fpsMonitor.Add("cameraIntrinsics", "\n" + "FL: " + focalLength.x + "x" + focalLength.y + "\n" + "PP: " + principalPoint.x + "x" + principalPoint.y);
                     }
                 }
 
                 if (eventArgs.projectionMatrix.HasValue)
                 {
-                    if (fpsMonitor != null)
+                    if (_fpsMonitor != null)
                     {
-                        fpsMonitor.Add("projectionMatrix", "\n" + eventArgs.projectionMatrix.ToString());
+                        _fpsMonitor.Add("projectionMatrix", "\n" + eventArgs.projectionMatrix.ToString());
                     }
                 }
 
                 if (eventArgs.timestampNs.HasValue)
                 {
-                    if (fpsMonitor != null)
+                    if (_fpsMonitor != null)
                     {
-                        fpsMonitor.Add("timestampNs", eventArgs.timestampNs.ToString());
+                        _fpsMonitor.Add("timestampNs", eventArgs.timestampNs.ToString());
                     }
                 }
 
                 /*
-                if (arCamera != null)
+                if (ArCamera != null)
                 {
                     if (fpsMonitor != null)
                     {
-                        fpsMonitor.Add("ARCamera_projectionMatrix", "\n" + arCamera.projectionMatrix.ToString());
-                        fpsMonitor.Add("ARCamera_worldToCameraMatrix", "\n" + arCamera.worldToCameraMatrix.ToString());
+                        fpsMonitor.Add("ARCamera_projectionMatrix", "\n" + ArCamera.projectionMatrix.ToString());
+                        fpsMonitor.Add("ARCamera_worldToCameraMatrix", "\n" + ArCamera.worldToCameraMatrix.ToString());
                     }
                 }
                 */
@@ -321,153 +416,43 @@ namespace ARFoundationWithOpenCVForUnityExample
 
         protected void DisplayImage()
         {
-            if (displayFlipVertical && displayFlipHorizontal)
+            if (_displayFlipVertical && _displayFlipHorizontal)
             {
-                Core.flip(rgbaMat, rgbaMat, -1);
+                Core.flip(_rgbaMat, _rgbaMat, -1);
             }
-            else if (displayFlipVertical)
+            else if (_displayFlipVertical)
             {
-                Core.flip(rgbaMat, rgbaMat, 0);
+                Core.flip(_rgbaMat, _rgbaMat, 0);
             }
-            else if (displayFlipHorizontal)
+            else if (_displayFlipHorizontal)
             {
-                Core.flip(rgbaMat, rgbaMat, 1);
+                Core.flip(_rgbaMat, _rgbaMat, 1);
             }
 
-            if (rotatedFrameMat != null)
+            if (_rotatedFrameMat != null)
             {
-                if (displayRotationAngle == 90)
+                if (_displayRotationAngle == 90)
                 {
-                    Core.rotate(rgbaMat, rotatedFrameMat, Core.ROTATE_90_CLOCKWISE);
+                    Core.rotate(_rgbaMat, _rotatedFrameMat, Core.ROTATE_90_CLOCKWISE);
                 }
-                else if (displayRotationAngle == 270)
+                else if (_displayRotationAngle == 270)
                 {
-                    Core.rotate(rgbaMat, rotatedFrameMat, Core.ROTATE_90_COUNTERCLOCKWISE);
+                    Core.rotate(_rgbaMat, _rotatedFrameMat, Core.ROTATE_90_COUNTERCLOCKWISE);
                 }
 
-                ProcessImage(rotatedFrameMat, grayMat, imageProcessingType);
-                OpenCVMatUtils.MatToTexture2D(rotatedFrameMat, texture);
+                ProcessImage(_rotatedFrameMat, _grayMat, ProcessingType);
+                OpenCVMatUnityUtils.MatToTexture2D(_rotatedFrameMat, _texture);
             }
             else
             {
-                if (displayRotationAngle == 180)
+                if (_displayRotationAngle == 180)
                 {
-                    Core.rotate(rgbaMat, rgbaMat, Core.ROTATE_180);
+                    Core.rotate(_rgbaMat, _rgbaMat, Core.ROTATE_180);
                 }
 
-                ProcessImage(rgbaMat, grayMat, imageProcessingType);
-                OpenCVMatUtils.MatToTexture2D(rgbaMat, texture);
+                ProcessImage(_rgbaMat, _grayMat, ProcessingType);
+                OpenCVMatUnityUtils.MatToTexture2D(_rgbaMat, _texture);
             }
-        }
-
-        /// <summary>
-        /// Releases all resource.
-        /// </summary>
-        private void Dispose()
-        {
-            hasInitDone = false;
-
-            if (rgbaMat != null)
-            {
-                rgbaMat.Dispose();
-                rgbaMat = null;
-            }
-            if (rotatedFrameMat != null)
-            {
-                rotatedFrameMat.Dispose();
-                rotatedFrameMat = null;
-            }
-            if (grayMat != null)
-            {
-                grayMat.Dispose();
-                grayMat = null;
-            }
-            if (texture != null)
-            {
-                Texture2D.Destroy(texture);
-                texture = null;
-            }
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-        /// <summary>
-        /// Raises the destroy event.
-        /// </summary>
-        void OnDestroy()
-        {
-            Dispose();
-        }
-
-        /// <summary>
-        /// Raises the back button click event.
-        /// </summary>
-        public void OnBackButtonClick()
-        {
-            SceneManager.LoadScene("ARFoundationWithOpenCVForUnityExample");
-        }
-
-        /// <summary>
-        /// Raises the play button click event.
-        /// </summary>
-        public void OnPlayButtonClick()
-        {
-            if (hasInitDone)
-                isPlaying = true;
-        }
-
-        /// <summary>
-        /// Raises the pause button click event.
-        /// </summary>
-        public void OnPauseButtonClick()
-        {
-            if (hasInitDone)
-                isPlaying = false;
-        }
-
-        /// <summary>
-        /// Raises the stop button click event.
-        /// </summary>
-        public void OnStopButtonClick()
-        {
-            if (hasInitDone)
-                isPlaying = false;
-        }
-
-        /// <summary>
-        /// Raises the change camera button click event.
-        /// </summary>
-        public void OnChangeCameraButtonClick()
-        {
-            if (hasInitDone)
-            {
-                // https://github.com/Unity-Technologies/arfoundation-samples/blob/main/Assets/Scripts/CameraSwapper.cs
-                CameraFacingDirection newFacingDirection;
-                switch (cameraManager.requestedFacingDirection)
-                {
-                    case CameraFacingDirection.World:
-                        newFacingDirection = CameraFacingDirection.User;
-                        break;
-                    case CameraFacingDirection.User:
-                    default:
-                        newFacingDirection = CameraFacingDirection.World;
-                        break;
-                }
-
-                Debug.Log($"Switching ARCameraManager.requestedFacingDirection from {cameraManager.requestedFacingDirection} to {newFacingDirection}");
-                cameraManager.requestedFacingDirection = newFacingDirection;
-
-                hasInitDone = false;
-            }
-        }
-
-        public void OnImageProcessingTypeDropdownValueChanged(int result)
-        {
-            imageProcessingType = (ImageProcessingType)result;
         }
 
         protected void ProcessImage(Mat frameMatrix, Mat grayMatrix, ImageProcessingType imageProcessingType)
@@ -490,11 +475,28 @@ namespace ARFoundationWithOpenCVForUnityExample
             }
         }
 
-        public enum ImageProcessingType
+        // Private Methods
+        /// <summary>
+        /// Releases all resource.
+        /// </summary>
+        private void Dispose()
         {
-            None,
-            DrawLine,
-            ConvertToGray,
+            _hasInitDone = false;
+
+            _rgbaMat?.Dispose();
+            _rgbaMat = null;
+
+            _rotatedFrameMat?.Dispose();
+            _rotatedFrameMat = null;
+
+            _grayMat?.Dispose();
+            _grayMat = null;
+
+            if (_texture != null)
+            {
+                Texture2D.Destroy(_texture);
+                _texture = null;
+            }
         }
     }
 }

@@ -1221,8 +1221,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2da9132983daa47b3117c076eb6ee3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  systemInfoText: {fileID: 1086899405}
-  systemInfoInputField: {fileID: 2144323609}
+  SystemInfoText: {fileID: 1086899405}
+  SystemInfoInputField: {fileID: 2144323609}
 --- !u!20 &1787239748
 Camera:
   m_ObjectHideFlags: 0

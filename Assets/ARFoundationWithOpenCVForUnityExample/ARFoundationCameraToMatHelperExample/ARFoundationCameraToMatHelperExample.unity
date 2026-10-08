@@ -667,7 +667,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnPauseButtonClick
         m_Mode: 1
         m_Arguments:
@@ -1004,7 +1005,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnChangeAutoFocusButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2869,7 +2871,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnBackButtonClick
         m_Mode: 1
         m_Arguments:
@@ -3023,7 +3026,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnStopButtonClick
         m_Mode: 1
         m_Arguments:
@@ -3417,7 +3421,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnRequestedFPSDropdownValueChanged
         m_Mode: 0
         m_Arguments:
@@ -3681,7 +3686,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnChangeCameraButtonClick
         m_Mode: 1
         m_Arguments:
@@ -4634,7 +4640,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnPlayButtonClick
         m_Mode: 1
         m_Arguments:
@@ -4716,7 +4723,7 @@ GameObject:
   - component: {fileID: 1709852086}
   - component: {fileID: 1709852088}
   m_Layer: 0
-  m_Name: ARFoundationCamera2MatHelperExample
+  m_Name: ARFoundationCameraToMatHelperExample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4746,17 +4753,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1709852081}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 14f633b00f058c04494e8e6de7d1b072, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e9c2a7b1d4f48c6a3e0b8d2f6c1a947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultPreview: {fileID: 393893930}
-  requestedResolutionDropdown: {fileID: 2079133493}
-  requestedResolution: 1
-  requestedFPSDropdown: {fileID: 1367890316}
-  requestedFPS: 30
-  rotate90DegreeToggle: {fileID: 680132458}
-  flipVerticalToggle: {fileID: 161766900}
-  flipHorizontalToggle: {fileID: 1530880838}
+  ResultPreview: {fileID: 393893930}
+  RequestedResolutionDropdown: {fileID: 2079133493}
+  RequestedResolution: 1
+  RequestedFPSDropdown: {fileID: 1367890316}
+  RequestedFPS: 30
+  Rotate90DegreeToggle: {fileID: 680132458}
+  FlipVerticalToggle: {fileID: 161766900}
+  FlipHorizontalToggle: {fileID: 1530880838}
 --- !u!114 &1709852087
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4766,65 +4773,115 @@ MonoBehaviour:
   m_GameObject: {fileID: 1709852081}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 035e8d345af099946bac2db2f77665ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 9d480e94015459147b154c72e3284ea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _requestedDeviceName: 
-  _requestedWidth: 640
-  _requestedHeight: 480
-  _requestedIsFrontFacing: 0
-  _requestedFPS: 30
-  _rotate90Degree: 0
-  _flipVertical: 0
-  _flipHorizontal: 0
-  _outputColorFormat: 3
-  _timeoutFrameCount: 1500
-  _onInitialized:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperInitialized
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _onDisposed:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperDisposed
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  _onErrorOccurred:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnWebCamTextureToMatHelperErrorOccurred
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  _commonSettings:
+    Rotate90Degree: 0
+    FlipVertical: 0
+    FlipHorizontal: 0
+    OutputColorFormat: 3
+    InitTimeoutMs: 20000
+    AutoTick: 1
+  _lifecycleEvents:
+    OnInitialized:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1709852086}
+          m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+            Assembly-CSharp
+          m_MethodName: OnSourceToMatHelperInitialized
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    OnReleased:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1709852086}
+          m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+            Assembly-CSharp
+          m_MethodName: OnSourceToMatHelperReleased
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+    OnDisposed:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1709852086}
+          m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+            Assembly-CSharp
+          m_MethodName: OnSourceToMatHelperDisposed
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  _frameEvents:
+    OnFrameMatUpdated:
+      m_PersistentCalls:
+        m_Calls: []
+    OnFrameMatLayoutChanged:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1709852086}
+          m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+            Assembly-CSharp
+          m_MethodName: OnSourceToMatHelperFrameMatLayoutChanged
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  _errorEvents:
+    OnErrorOccurred:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1709852086}
+          m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+            Assembly-CSharp
+          m_MethodName: OnSourceToMatHelperErrorOccurred
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  _derivedFrames:
+    OnDerivedFrameLayoutChanged:
+      m_PersistentCalls:
+        m_Calls: []
+    Settings: []
   _xROrigin: {fileID: 2089140841}
+  _sourceSettings:
+    RequestedDeviceName: 
+    RequestedWidth: 640
+    RequestedHeight: 480
+    RequestedFPS: 30
+    RequestedIsFrontFacing: 0
+    RequestedUseAsyncGPUReadback: 0
 --- !u!114 &1709852088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4834,16 +4891,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1709852081}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 745c797ec046df94aa423a66665a249c, type: 3}
+  m_Script: {fileID: 11500000, guid: 1cc7ba3dda323c5449601e8aedafb17b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  alignment: 1
-  offset: {x: 10, y: 10}
-  boxVisible: 1
-  boxWidth: 300
-  boxHeight: 800
-  padding: {x: 8, y: 5}
-  consoleHeight: 100
+  AlignmentSetting: 1
+  BoxVisible: 1
 --- !u!1 &1719026243
 GameObject:
   m_ObjectHideFlags: 0
@@ -5568,7 +5620,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852086}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatHelperExample,
+          Assembly-CSharp
         m_MethodName: OnRequestedResolutionDropdownValueChanged
         m_Mode: 0
         m_Arguments:

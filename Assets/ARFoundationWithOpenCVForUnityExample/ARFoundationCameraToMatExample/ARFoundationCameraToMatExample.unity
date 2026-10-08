@@ -367,7 +367,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnPauseButtonClick
         m_Mode: 1
         m_Arguments:
@@ -616,7 +617,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnImageProcessingTypeDropdownValueChanged
         m_Mode: 0
         m_Arguments:
@@ -1760,7 +1762,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnBackButtonClick
         m_Mode: 1
         m_Arguments:
@@ -1914,7 +1917,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnStopButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2331,7 +2335,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnChangeCameraButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2875,7 +2880,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1709852087}
-        m_TargetAssemblyTypeName: 
+        m_TargetAssemblyTypeName: ARFoundationWithOpenCVForUnityExample.ARFoundationCameraToMatExample,
+          Assembly-CSharp
         m_MethodName: OnPlayButtonClick
         m_Mode: 1
         m_Arguments:
@@ -2954,7 +2960,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1709852085}
   - component: {fileID: 1709852087}
-  - component: {fileID: 1709852086}
+  - component: {fileID: 1709852088}
   m_Layer: 0
   m_Name: ARFoundationCameraToMatExample
   m_TagString: Untagged
@@ -2977,25 +2983,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1709852086
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1709852081}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 745c797ec046df94aa423a66665a249c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  alignment: 1
-  offset: {x: 10, y: 10}
-  boxVisible: 1
-  boxWidth: 300
-  boxHeight: 800
-  padding: {x: 8, y: 5}
-  consoleHeight: 100
 --- !u!114 &1709852087
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3008,11 +2995,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b76b14898a0cfc246bb115e926532923, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultPreview: {fileID: 1388259506}
-  cameraManager: {fileID: 417264189}
-  arCamera: {fileID: 417264191}
-  imageProcessingType: 0
-  imageProcessingTypeDropdown: {fileID: 392084443}
+  ResultPreview: {fileID: 1388259506}
+  CameraManager: {fileID: 417264189}
+  ArCamera: {fileID: 417264191}
+  ProcessingType: 0
+  ImageProcessingTypeDropdown: {fileID: 392084443}
+--- !u!114 &1709852088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709852081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cc7ba3dda323c5449601e8aedafb17b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AlignmentSetting: 1
+  BoxVisible: 1
 --- !u!1 &1757671038
 GameObject:
   m_ObjectHideFlags: 0

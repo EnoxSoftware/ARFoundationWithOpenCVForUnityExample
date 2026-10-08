@@ -1,12 +1,17 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 namespace ARFoundationWithOpenCVForUnityExample
 {
     public class RuntimePermissionHelper : MonoBehaviour
     {
+#if (UNITY_IOS && UNITY_2018_1_OR_NEWER) || (UNITY_ANDROID && UNITY_2018_3_OR_NEWER)
+        // Protected Fields
+        protected bool _isUserRequestingPermission;
+#endif
 
-        public virtual IEnumerator hasUserAuthorizedCameraPermission()
+        // Public Methods
+        public virtual IEnumerator HasUserAuthorizedCameraPermission()
         {
 #if UNITY_IOS && UNITY_2018_1_OR_NEWER
             UserAuthorization mode = UserAuthorization.WebCam;
@@ -27,7 +32,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 #endif
         }
 
-        public virtual IEnumerator hasUserAuthorizedMicrophonePermission()
+        public virtual IEnumerator HasUserAuthorizedMicrophonePermission()
         {
 #if UNITY_IOS && UNITY_2018_1_OR_NEWER
             UserAuthorization mode = UserAuthorization.Microphone;
@@ -48,7 +53,7 @@ namespace ARFoundationWithOpenCVForUnityExample
 #endif
         }
 
-        public virtual IEnumerator hasUserAuthorizedExternalStorageWritePermission()
+        public virtual IEnumerator HasUserAuthorizedExternalStorageWritePermission()
         {
 #if UNITY_ANDROID && UNITY_2018_3_OR_NEWER
             string permission = UnityEngine.Android.Permission.ExternalStorageWrite;
@@ -63,28 +68,29 @@ namespace ARFoundationWithOpenCVForUnityExample
         }
 
 #if (UNITY_IOS && UNITY_2018_1_OR_NEWER) || (UNITY_ANDROID && UNITY_2018_3_OR_NEWER)
-        protected bool isUserRequestingPermission;
-
+        // Protected Methods
         protected virtual IEnumerator OnApplicationFocus(bool hasFocus)
         {
             yield return null;
 
-            if (isUserRequestingPermission && hasFocus)
-                isUserRequestingPermission = false;
+            if (_isUserRequestingPermission && hasFocus)
+            {
+                _isUserRequestingPermission = false;
+            }
         }
 
 #if UNITY_IOS
         protected virtual IEnumerator RequestUserAuthorization(UserAuthorization mode)
         {
-            isUserRequestingPermission = true;
+            _isUserRequestingPermission = true;
             yield return Application.RequestUserAuthorization(mode);
 
             float timeElapsed = 0;
-            while (isUserRequestingPermission)
+            while (_isUserRequestingPermission)
             {
                 if (timeElapsed > 0.25f)
                 {
-                    isUserRequestingPermission = false;
+                    _isUserRequestingPermission = false;
                     yield break;
                 }
                 timeElapsed += Time.deltaTime;
@@ -96,15 +102,15 @@ namespace ARFoundationWithOpenCVForUnityExample
 #elif UNITY_ANDROID
         protected virtual IEnumerator RequestUserPermission(string permission)
         {
-            isUserRequestingPermission = true;
+            _isUserRequestingPermission = true;
             UnityEngine.Android.Permission.RequestUserPermission(permission);
 
             float timeElapsed = 0;
-            while (isUserRequestingPermission)
+            while (_isUserRequestingPermission)
             {
                 if (timeElapsed > 0.25f)
                 {
-                    isUserRequestingPermission = false;
+                    _isUserRequestingPermission = false;
                     yield break;
                 }
                 timeElapsed += Time.deltaTime;
